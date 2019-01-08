@@ -1,0 +1,138 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Elf #7 - Sparkle Redberry - Dev Ops Fail Cranberry Pi terminal</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="gitpasshist.gif" alt="" class="wp-image-786">
+</figure>
+<hr class="wp-block-separator">
+<h2>Sparkle Redberry: Dev Ops Fail Cranberry Pi terminal</h2>
+<p>Hints given:
+  <br>https://en.internetwache.org/dont-publicly-expose-git-or-how-we-downloaded-your-websites-sourcecode-an-analysis-of-alexas-1m-28-07-2015/
+  <br>https://gist.github.com/hofmannsven/6814451
+</p>
+<p>Coalbox again, and I&apos;ve got one more ask.
+  <br>Sparkle Q. Redberry has fumbled a task.
+  <br>Git pull and merging, she did all the day;
+  <br>With all this gitting, some creds got away.
+  <br>
+  <br>Urging - I scolded, &quot;Don&apos;t put creds in git!&quot;
+  <br>She said, &quot;Don&apos;t worry - you&apos;re having a fit.
+  <br>If I did drop them then surely I could,
+  <br>Upload some new code done up as one should.&quot;
+  <br>
+  <br>Though I would like to believe this here elf,
+  <br>I&apos;m worried we&apos;ve put some creds on a shelf.
+  <br>Any who&apos;s curious might find our &quot;oops,&quot;
+  <br>Please find it fast before some other snoops!
+  <br>
+  <br>Find Sparkle&apos;s password, then run the runtoanswer tool.
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Recursively search all files on the file system for the text &quot;password&quot;,
+  starting from the root folder &quot;/&quot;, and excluding a few system
+  directories and redirecting errors to /dev/null (this effectively prevents
+  errors from this command from displaying on the screen)
+</p>
+<pre class="wp-block-code code-black-background"><code>elf@b5751e70d4a6:~$ grep --exclude-dir={sys,proc,boot,dev,lost+found} -rnw &apos;/&apos; -e &quot;password&quot; 2&gt;/dev/null
+Binary file /lib/x86_64-linux-gnu/libpam.so.0.83.1 matches
+Binary file /lib/x86_64-linux-gnu/libc-2.24.so matches
+Binary file /lib/x86_64-linux-gnu/security/pam_exec.so matches
+Binary file /lib/x86_64-linux-gnu/security/pam_unix.so matches
+Binary file /lib/x86_64-linux-gnu/security/pam_stress.so matches
+Binary file /lib/x86_64-linux-gnu/security/pam_pwhistory.so matches
+Binary file /lib/x86_64-linux-gnu/security/pam_ftp.so matches
+Binary file /lib/x86_64-linux-gnu/security/pam_userdb.so matches
+/home/elf/kcconfmgmt/.git/logs/refs/heads/master:9:b2376f4a93ca1889ba7d947c2d14be9a5d138802 60a2ffea7520ee980a5fc60177ff4d0633f2516b Sparkle Redberry &lt;sredberry@kringlecon.com&gt; 1541729463 -0500     commit: Per @tcoalbox admonishment, removed username/password from config.js, default settings in config.js.def need to be updated before use
+
+-- REMAINING OUTPUT TRUNCATED --</code></pre>
+
+  <div style="height:20px"
+  aria-hidden="true" class="wp-block-spacer"></div>
+  <p>List the directories, looking for the .git folder</p>
+<pre class="wp-block-code code-black-background"><code>elf@b5751e70d4a6:~$ ls -al
+total 5832
+drwxr-xr-x 1 elf  elf     4096 Dec 14 16:30 .
+drwxr-xr-x 1 root root    4096 Dec 14 16:30 ..
+-rw-r--r-- 1 elf  elf      220 May 15  2017 .bash_logout
+-rw-r--r-- 1 elf  elf     1836 Dec 14 16:13 .bashrc
+-rw-r--r-- 1 elf  elf      675 May 15  2017 .profile
+drwxr-xr-x 1 elf  elf     4096 Nov 14 09:48 kcconfmgmt
+-rwxr-xr-x 1 elf  elf  5944352 Dec 14 16:13 runtoanswer
+elf@b5751e70d4a6:~$ cd kcconfmgmt/
+elf@b5751e70d4a6:~/kcconfmgmt$ ls -al
+total 72
+drwxr-xr-x 1 elf elf  4096 Nov 14 09:48 .
+drwxr-xr-x 1 elf elf  4096 Dec 14 16:30 ..
+drwxr-xr-x 1 elf elf  4096 Nov 14 09:48 .git
+-rw-r--r-- 1 elf elf    66 Nov  1 15:30 README.md
+-rw-r--r-- 1 elf elf  1074 Nov  3 20:28 app.js
+-rw-r--r-- 1 elf elf 31003 Nov 14 09:46 package-lock.json
+-rw-r--r-- 1 elf elf   537 Nov 14 09:48 package.json
+drwxr-xr-x 1 elf elf  4096 Nov  2 15:05 public
+drwxr-xr-x 1 elf elf  4096 Nov  2 15:05 routes
+drwxr-xr-x 1 elf elf  4096 Nov 14 09:47 server
+drwxr-xr-x 1 elf elf  4096 Nov  2 15:05 views
+elf@b5751e70d4a6:~/kcconfmgmt$</code></pre>
+
+  <div style="height:20px" aria-hidden="true"
+  class="wp-block-spacer"></div>
+  <p>Search the git log for changes to the file &apos;config.js&apos;</p>
+  <pre
+  class="wp-block-code code-black-background"><code>elf@b5751e70d4a6:~/kcconfmgmt$ git log --all --full-history -- **/config.js.*
+commit 60a2ffea7520ee980a5fc60177ff4d0633f2516b
+Author: Sparkle Redberry &lt;sredberry@kringlecon.com&gt;
+Date:   Thu Nov 8 21:11:03 2018 -0500
+
+  Per @tcoalbox admonishment, removed username/password from config.js, default settings in config.js.def ne
+ed to be updated before use
+elf@b5751e70d4a6:~/kcconfmgmt$</code>
+    </pre>
+    <div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+    <p>Use the &apos;git show&apos; command to display the commit change for
+      commit number &apos;60a2ffea7520ee980a5fc60177ff4d0633f2516b&apos;</p>
+    <pre
+    class="wp-block-code code-black-background"><code>elf@b5751e70d4a6:~/kcconfmgmt$ git show 60a2ffea7520ee980a5fc60177ff4d0633f2516b
+commit 60a2ffea7520ee980a5fc60177ff4d0633f2516b
+Author: Sparkle Redberry &lt;sredberry@kringlecon.com&gt;
+Date:   Thu Nov 8 21:11:03 2018 -0500
+
+  Per @tcoalbox admonishment, removed username/password from config.js, default settings in config.js.def ne
+ed to be updated before use
+
+diff --git a/server/config/config.js b/server/config/config.js
+deleted file mode 100644
+index 25be269..0000000
+--- a/server/config/config.js
++++ /dev/null
+@@ -1,4 +0,0 @@
+-// Database URL
+-module.exports = {
+-    &apos;url&apos; : &apos;mongodb://sredberry:twinkletwinkletwinkle@127.0.0.1:27017/node-api&apos;
+-};
+diff --git a/server/config/config.js.def b/server/config/config.js.def
+new file mode 100644
+index 0000000..740eba5
+--- /dev/null
++++ b/server/config/config.js.def
+@@ -0,0 +1,4 @@
++// Database URL
++module.exports = {
++    &apos;url&apos; : &apos;mongodb://username:password@127.0.0.1:27017/node-api&apos;
++};
+elf@b5751e70d4a6:~/kcconfmgmt$</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>And finally, submit the password</p>
+<pre class="wp-block-code code-black-background"><code>elf@b5751e70d4a6:~/kcconfmgmt$ ../runtoanswer
+Loading, please wait......
+
+Enter Sparkle Redberry&apos;s password: twinkletwinkletwinkle
+
+This ain&apos;t &quot;I told you so&quot; time, but it&apos;s true:
+I shake my head at the goofs we go through.
+Everyone knows that the gits aren&apos;t the place;
+Store your credentials in some safer space.
+
+Congratulations!</code></pre>
+</div></body></html>

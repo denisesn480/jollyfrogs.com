@@ -1,0 +1,153 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 8: Network Traffic Forensics</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective8.gif" alt="" class="wp-image-871">
+</figure>
+<p>Difficulty: 4/5
+  <br>
+  <br>Santa has introduced a web-based packet capture and analysis tool at https://packalyzer.kringlecastle.com
+  to support the elves and their information security work. Using the system,
+  access and decrypt HTTP/2 network activity.
+  <br><strong>What is the name of the song described in the document sent from Holly Evergreen to Alabaster Snowball? <br></strong>
+  <br>For hints on achieving this objective, please visit SugarPlum Mary and
+  help her with the Python Escape from LA Cranberry Pi terminal challenge.
+  <br>Note: SugarPlum Mary can be found on Floor 1, on the Western side of the
+  lobby area
+  <br>
+  <br>Hints given:
+  <br>Did you see Chris&apos; (https://www.youtube.com/watch?v=PC6-mn9g9Cs)
+  &amp; Chris&apos; (https://www.youtube.com/watch?v=YHOnxlQ6zec) talk on
+  HTTP/2.0?
+  <br>
+  <br>SugarPlum Mary:
+  <br>As a token of my gratitude, I would like to share a rumor I had heard
+  about Santa&apos;s new web-based packet analyzer - Packalyzer. Another
+  elf told me that Packalyzer was rushed and deployed with development code
+  sitting in the web root. Apparently, he found this out by looking at HTML
+  comments left behind and was able to grab the server-side source code.
+  There was suspicious-looking development code using environment variables
+  to store SSL keys and open up directories. This elf then told me that manipulating
+  values in the URL gave back weird and descriptive errors. I&apos;m hoping
+  these errors can&apos;t be used to compromise SSL on the website and steal
+  logins. On a tooootally unrelated note, have you seen the HTTP2 talk at
+  at KringleCon by the Chrises? I never knew HTTP2 was so different!</p>
+<p>
+  <br>The objective can be accessed directly via this link:
+  <br>https://packalyzer.kringlecastle.com
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Navigate to https://packalyzer.kringlecastle.com/
+  <br>Click Register
+  <br>Username: jollyfrogs
+  <br>Email : thefrog@thepond.invalid
+  <br>password: jollyfrogs
+  <br>confirm password: jollyfrogs
+  <br>Note: The username and password both need to be lowercase.
+  <br>
+  <br>After the username is created, login to Packalyzer with the new credentials.
+  <br>
+  <br>Once logged in, right-click the website and select &quot;View Source&quot;</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/source.zip">source.txt (zipped)</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/source.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The key bits of info from the source code are below</p>
+<pre class="wp-block-code code-black-background"><code>https://packalyzer.kringlecastle.com:80/pub/css/materialize.css
+https://packalyzer.kringlecastle.com:80/pub/js/loader.js
+// File upload Function. All extensions and sizes are validated server-side in app.js</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The directories above seem to indicate that most of the source code is
+  contained within the https://packalyzer.kringlecastle.com:80/pub/ folder.
+  <br>
+  <br>Navigating to https://packalyzer.kringlecastle.com:80/pub/app.js reveals
+  the server-side NodeJS source code:</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/app.zip">app.js (zipped)</a>
+  <a
+  href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/app.zip" class="wp-block-file__button"
+  download="">Download</a>
+</div>
+<p>The app.js file contains the following key bits of info</p>
+<pre class="wp-block-code code-black-background"><code>const key_log_path = ( !dev_mode || __dirname + process.env.DEV + process.env.SSLKEYLOGFILE )
+
+function load_envs() {
+  var dirs = []
+  var env_keys = Object.keys(process.env)
+  for (var i=0; i &lt; env_keys.length; i++) {
+  if (typeof process.env[env_keys[i]] === &quot;string&quot; ) {
+    dirs.push(( &quot;/&quot;+env_keys[i].toLowerCase()+&apos;/*&apos;) )
+  }
+  }
+  return uniqueArray(dirs)
+}</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>From the information above, both process.env.DEV and process.env.SSLKEYLOGFILE
+  are pushed (used) as website directories.</p>
+<p>Browsing to https://packalyzer.kringlecastle.com/DEV/ reveals it is a
+  directory, although we do not yet know what file to access in it.</p>
+<pre class="wp-block-code code-black-background"><code>Error: EISDIR: illegal operation on a directory, read</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Browsing to https://packalyzer.kringlecastle.com/SSLKEYLOGFILE/ reveals
+  the SSL key log file name &quot;packalyzer_clientrandom_ssl.log&quot;</p>
+<pre class="wp-block-code code-black-background"><code>Error: ENOENT: no such file or directory, open &apos;/opt/http2packalyzer_clientrandom_ssl.log/&apos;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Together, the directory and the file name reveal the SSL key log file
+  contents</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/packalyzer_clientrandom_ssl.zip">packalyzer_clientrandom_ssl.log (zipped)</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/packalyzer_clientrandom_ssl.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>Using the Packalyzer &quot;Sniff Traffic&quot; feature, a capture is taken</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/69805829_1-1-2019_2-0-52.zip">69805829_1-1-2019_2-0-52.pcap (zipped)</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/69805829_1-1-2019_2-0-52.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>In Wireshark, the contents of the pcap file are decoded using the &apos;packalyzer_clientrandom_ssl.log&apos;
+  file. The decoded contents reveal the credentials of a few elves, including
+  &apos;alabaster&apos; who has admin privileges.</p>
+<pre class="wp-block-code"><code>Open 69805829_1-1-2019_2-0-52.pcap in WireShark
+In Wireshark, click &quot;Edit&quot; menu
+  &quot;Preferences...&quot;
+  &quot;Protocols&quot;
+  &quot;SSL&quot;
+  (Pre)-Master-Secret log filename: packalyzer_clientrandom_ssl.log
+  Click &quot;OK&quot; - the encrypted SSL streams are decrypted
+
+In the top bar, type: http2.data.data
+Highlight one of the &quot;DATA[1] (application/json)&quot; packets
+  Expand &quot;HyperText Transfer Protocol 2&quot;
+    Expand Stream: DATA, Stream ID: 1, Length 98
+      Highlight &quot;JavaScript Object Notation: application/json&quot;
+        {&quot;username&quot;: &quot;alabaster&quot;, &quot;password&quot;: &quot;Packer-p@re-turntable192&quot;}</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Login to the Packalyzer website using Alabaster&apos;s credentials:
+  <br>username: alabaster
+  <br>password: Packer-p@re-turntable192
+  <br>
+  <br>And download the capture file &quot;super_secret_packet_capture.pcap&quot;,
+  (the file is renamed to &quot;upload_2a4a5ae98007cb261119b208bf9369ef.pcap&quot;
+  when downloaded)</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/upload_2a4a5ae98007cb261119b208bf9369ef.zip">upload_2a4a5ae98007cb261119b208bf9369ef.pcap (zipped)</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/upload_2a4a5ae98007cb261119b208bf9369ef.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>Using Wireshark, open the file &apos;upload_2a4a5ae98007cb261119b208bf9369ef.pcap&apos;
+  and right-click any packet -&gt; Follow -&gt; TCP Stream. This will show
+  the raw SMTP email from &quot;Holly.evergreen@mail.kringlecastle.com&quot;
+  to &quot;alabaster.snowball@mail.kringlecastle.com&quot;.
+  <br>
+  <br>Copy the Base64 encoded attachment, and decode it in using Kali</p>
+<pre
+class="wp-block-code"><code>root@kali ~# leafpad attachment.b64
+root@kali ~# cat attachment.b64 | base64 -d &gt; objective8
+root@kali ~# file objective8
+objective8: PDF document, version 1.5
+root@kali ~# mv objective8 objective8.pdf
+root@kali ~# evince objective8.pdf</code>
+</pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/objective8.pdf">objective8</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/objective8.pdf" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The song name referenced in the PDF is:
+  <br><strong>Mary Had a Little Lamb</strong>
+</p>
+</div></body></html>

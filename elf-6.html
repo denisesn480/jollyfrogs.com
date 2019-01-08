@@ -1,0 +1,1042 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Elf #6 - Pepper Minstix: Yule Log Analysis Cranberry Pi terminal</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="spray-detect.gif" alt="" class="wp-image-782">
+</figure>
+<hr class="wp-block-separator">
+<h2>Pepper Minstix - Yule Log Analysis Cranberry Pi terminal </h2>
+<p>Hint given: https://www.youtube.com/watch?v=ZIOw_xfqkKM
+  <br>
+  <br>I am Pepper Minstix, and I&apos;m looking for your help.
+  <br>Bad guys have us tangled up in pepperminty kelp!
+  <br>&quot;Password spraying&quot; is to blame for this our grinchly fate.
+  <br>Should we blame our password policies which users hate?
+  <br>
+  <br>Here you&apos;ll find a web log filled with failure and success.
+  <br>One successful login there requires your redress.
+  <br>Can you help us figure out which user was attacked?
+  <br>Tell us who fell victim, and please handle this with tact...
+  <br>
+  <br>Submit the compromised webmail username to runtoanswer to complete this
+  challenge.
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>List the current directory</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ ls -al
+total 6916
+drwxr-xr-x 1 elf  elf     4096 Dec 14 16:42 .
+drwxr-xr-x 1 root root    4096 Dec 14 16:42 ..
+-rw-r--r-- 1 elf  elf      220 Apr  4  2018 .bash_logout
+-rw-r--r-- 1 elf  elf     3785 Dec 14 16:42 .bashrc
+-rw-r--r-- 1 elf  elf      807 Apr  4  2018 .profile
+-rw-r--r-- 1 elf  elf     1353 Dec 14 16:13 evtx_dump.py
+-rw-r--r-- 1 elf  elf  1118208 Dec 14 16:13 ho-ho-no.evtx
+-rwxr-xr-x 1 elf  elf  5936968 Dec 14 16:13 runtoanswer
+elf@9379a8ea1023:~$</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Use evtx_dump.py to convert the file &quot;ho-ho-no..evtx&quot; into an XML file</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ python evtx_dump.py ho-ho-no.evtx &gt; events.xml
+elf@9379a8ea1023:~$</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>A good start to identify a password spray attack, is to look for failed
+  logons (event ID 4625) from a single source host (or from a limited range
+  of source hosts), over a wide range of usernames, within a short timeframe.
+  <br>
+  <br>First, identify the structure of a failed logon attempt from the event log:
+</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ cat events.xml | grep &quot;4625&quot; -m 1 -C 50
+&lt;Event xmlns=&quot;http://schemas.microsoft.com/win/2004/08/events/event&quot;&gt;&lt;System&gt;&lt;Provider Name=&quot;Microsoft-Windows-Security-Auditing&quot; Guid=&quot;{54849625-5478-4994-a5ba-3e3b0328c30d}&quot;&gt;&lt;/Provider&gt;
+&lt;EventID Qualifiers=&quot;&quot;&gt;4625&lt;/EventID&gt;
+&lt;Version&gt;0&lt;/Version&gt;
+&lt;Level&gt;0&lt;/Level&gt;
+&lt;Task&gt;12544&lt;/Task&gt;
+&lt;Opcode&gt;0&lt;/Opcode&gt;
+&lt;Keywords&gt;0x8010000000000000&lt;/Keywords&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 12:41:50.900736&quot;&gt;&lt;/TimeCreated&gt;
+&lt;EventRecordID&gt;234488&lt;/EventRecordID&gt;
+&lt;Correlation ActivityID=&quot;{71a9b66f-4900-0001-a8b6-a9710049d401}&quot; RelatedActivityID=&quot;&quot;&gt;&lt;/Correlation&gt;
+&lt;Execution ProcessID=&quot;664&quot; ThreadID=&quot;712&quot;&gt;&lt;/Execution&gt;
+&lt;Channel&gt;Security&lt;/Channel&gt;
+&lt;Computer&gt;WIN-KCON-EXCH16.EM.KRINGLECON.COM&lt;/Computer&gt;
+&lt;Security UserID=&quot;&quot;&gt;&lt;/Security&gt;
+&lt;/System&gt;
+&lt;EventData&gt;&lt;Data Name=&quot;SubjectUserSid&quot;&gt;S-1-5-18&lt;/Data&gt;
+&lt;Data Name=&quot;SubjectUserName&quot;&gt;WIN-KCON-EXCH16$&lt;/Data&gt;
+&lt;Data Name=&quot;SubjectDomainName&quot;&gt;EM.KRINGLECON&lt;/Data&gt;
+&lt;Data Name=&quot;SubjectLogonId&quot;&gt;0x00000000000003e7&lt;/Data&gt;
+&lt;Data Name=&quot;TargetUserSid&quot;&gt;S-1-0-0&lt;/Data&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sparkle.redberry&lt;/Data&gt;
+&lt;Data Name=&quot;TargetDomainName&quot;&gt;EM.KRINGLECON&lt;/Data&gt;
+&lt;Data Name=&quot;Status&quot;&gt;0xc000006d&lt;/Data&gt;
+&lt;Data Name=&quot;FailureReason&quot;&gt;%%2313&lt;/Data&gt;
+&lt;Data Name=&quot;SubStatus&quot;&gt;0xc000006a&lt;/Data&gt;
+&lt;Data Name=&quot;LogonType&quot;&gt;8&lt;/Data&gt;
+&lt;Data Name=&quot;LogonProcessName&quot;&gt;Advapi  &lt;/Data&gt;
+&lt;Data Name=&quot;AuthenticationPackageName&quot;&gt;Negotiate&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;Data Name=&quot;TransmittedServices&quot;&gt;-&lt;/Data&gt;
+&lt;Data Name=&quot;LmPackageName&quot;&gt;-&lt;/Data&gt;
+&lt;Data Name=&quot;KeyLength&quot;&gt;0&lt;/Data&gt;
+&lt;Data Name=&quot;ProcessId&quot;&gt;0x00000000000019f0&lt;/Data&gt;
+&lt;Data Name=&quot;ProcessName&quot;&gt;C:\Windows\System32\inetsrv\w3wp.exe&lt;/Data&gt;
+&lt;Data Name=&quot;IpAddress&quot;&gt;10.158.210.210&lt;/Data&gt;
+&lt;Data Name=&quot;IpPort&quot;&gt;47904&lt;/Data&gt;
+&lt;/EventData&gt;
+&lt;/Event&gt;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>To capture a single fail event, search the file using grep for pattern
+  &quot;&gt;4625&lt;&quot; and include 1 line above, and 37 lines below,
+  as per the pattern above. Then pipe those search results into another grep
+  search which outputs the WorkstationName, TargetUserName and TimeCreated
+  fields.
+</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ cat events.xml | grep &quot;&gt;4625&lt;&quot; -B 1 -A 37 | grep -E &quot;WorkstationName|TargetUserName|TimeCreated&quot;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 12:41:50.900736&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sparkle.redberry&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 12:54:56.034510&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;test.user&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+
+<div class="bg-margin-for-link"><input type="hidden" bg_collapse_expand="5c30dcdf19b801071041788" value="5c30dcdf19b801071041788"><input type="hidden" id="bg-show-more-text-5c30dcdf19b801071041788" value="Show all output"><input type="hidden" id="bg-show-less-text-5c30dcdf19b801071041788" value="Reduce output"><a id="bg-showmore-action-5c30dcdf19b801071041788" class="bg-showmore-plg-link bg-arrow" style=" color:#E0E0E0;;" href="#">Show all output</a><div id="bg-showmore-hidden-5c30dcdf19b801071041788">
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:33.271959&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;aaron.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:34.075348&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;abhishek.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:34.660316&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;adam.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:35.204905&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ahmed.ali&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:35.766270&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ahmed.hassan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:36.352919&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ahmed.mohamed&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:36.907885&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ajay.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:37.453701&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;alex.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:38.022621&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ali.khan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:38.613226&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ali.raza&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:39.373684&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;amanda.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:39.915073&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;amit.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:40.462021&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;amit.sharma&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:41.007196&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;amit.singh&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:41.569283&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;amy.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:42.160475&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;andrew.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:42.736334&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;anil.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:43.290113&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;arun.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:43.843849&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ashley.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:44.424263&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ashley.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:45.065706&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ashley.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:45.688112&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ashley.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:46.261171&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ashley.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:46.823851&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ashok.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:47.377460&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ben.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:47.923506&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;bob.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:48.488831&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;brandon.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:49.052931&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;brian.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:49.605789&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;brian.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:50.168415&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;brian.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:50.839815&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;bushy.evergreen&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:51.865492&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.anderson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:52.433693&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:53.001278&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.davis&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:53.559198&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:54.119530&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:54.675045&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:55.238348&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.martin&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:55.795528&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.miller&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:56.358587&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:56.916170&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.taylor&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:57.503883&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:58.055046&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;chris.wilson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:58.609213&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;christopher.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:59.164030&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;dan.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:03:59.722332&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;daniel.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:00.286381&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;dave.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:00.842197&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.anderson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:01.396158&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:01.949987&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:02.493607&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:03.046169&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:03.714020&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.miller&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:04.268528&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:04.820230&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:05.371727&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;david.wilson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:06.014343&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;deepak.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:06.649487&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;deepak.sharma&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:07.222918&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;dinesh.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:07.771048&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;eric.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:08.322069&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;eric.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:08.874073&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;gaurav.sharma&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:09.437605&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;greg.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:09.996351&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;gurpreet.singh&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:10.559187&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;harpreet.singh&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:11.298267&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;heather.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:12.423508&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;holly.evergreen&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:13.151104&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;imran.khan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:13.705877&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:14.530058&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:15.088469&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:15.672592&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:16.288746&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:16.869173&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.taylor&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:17.461824&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;james.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:18.012636&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jamie.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:18.573029&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jane.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:19.150908&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jason.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:19.700724&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jason.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:20.291983&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jason.lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:20.894423&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jason.miller&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:21.486912&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jason.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:22.135935&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jason.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:22.706959&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jeff.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:23.278767&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jennifer.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:23.974884&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jennifer.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:24.551476&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jennifer.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:25.148003&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jessica.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:25.749002&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jessica.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:26.302441&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jessica.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:26.856125&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jessica.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:27.409395&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jessica.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:27.971256&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;joe.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:28.533945&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.anderson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:29.115904&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:29.739923&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.davis&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:30.375793&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:30.968117&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:31.548908&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:32.162376&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.miller&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:32.746857&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:33.363949&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.taylor&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:34.041502&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:34.654013&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;john.wilson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:35.248144&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jose.garcia&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:35.823170&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;jose.rodriguez&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:36.386341&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;josh.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:36.940044&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;justin.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:37.500202&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;karen.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:38.060606&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;katie.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:38.635445&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kelly.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:39.228077&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kevin.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:39.802210&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kevin.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:40.415245&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kevin.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:40.976612&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kevin.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:41.539883&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kim.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:42.121912&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kiran.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:42.688402&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;kyle.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:43.299837&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;laura.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:43.984121&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:44.549450&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;linda.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:45.139059&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;lisa.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:45.762865&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;manish.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:46.447515&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;manoj.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:47.140846&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mark.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:47.764875&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mark.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:48.472986&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mark.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:49.277210&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mark.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:49.912367&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mark.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:50.519777&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mary.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:51.124678&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;matt.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:51.726248&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;matt.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:52.315512&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;matthew.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:52.886793&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;melissa.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:53.482029&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:54.082096&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.davis&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:54.684185&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:55.309319&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:55.856558&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.lee&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:56.404888&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.miller&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:56.965832&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:57.516771&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.taylor&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:58.092943&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:58.658834&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michael.wilson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:59.244781&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;michelle.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:04:59.797939&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mike.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:00.383850&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mike.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:00.962267&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mike.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:01.521271&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mike.miller&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:02.088915&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mike.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:02.652279&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mike.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:04.337202&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mohamed.ahmed&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:04.896589&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;mohamed.ali&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:05.470928&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;muhammad.ali&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:06.028364&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;naveen.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:06.583931&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;nicole.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:07.141964&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;paul.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:08.101768&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;pepper.minstix&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:08.643911&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;pradeep.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:09.240726&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;praveen.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:09.809149&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rachel.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:10.393087&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rahul.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:10.948811&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rahul.sharma&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:11.503000&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rahul.singh&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:12.097919&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;raj.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:12.686460&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rajesh.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:13.237906&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rakesh.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:13.805275&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ravi.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:14.389742&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;richard.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:14.946390&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;robert.brown&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:15.495548&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;robert.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:16.048674&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;robert.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:16.600885&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;robert.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:17.156944&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;robert.williams&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:17.733511&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;rohit.sharma&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:18.281000&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ryan.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:18.838820&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;ryan.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:19.391932&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;salman.khan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:19.958586&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sam.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:20.528719&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;samantha.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:21.097248&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sameer.khan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:21.656797&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sana.khan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:22.208782&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sandeep.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:22.801895&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sandeep.singh&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:23.537363&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sanjay.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:24.097797&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;santhosh.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:24.681721&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;santosh.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:25.323727&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sara.khan&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:25.884752&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sarah.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:26.545803&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sarah.jones&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:27.151464&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sarah.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:27.710266&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sathish.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:28.455671&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;scott.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:29.016874&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;scott.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:29.643820&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;senthil.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:30.380114&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;shinny.upatree&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:31.085808&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sparkle.redberry&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:31.696802&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;stephanie.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:32.314573&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;steve.johnson&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:32.879330&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;steve.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:33.451090&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;steven.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:34.076244&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sugerplum.mary&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:34.760111&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;sunil.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:35.341993&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;suresh.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:35.935612&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;tim.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:36.526941&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;tom.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:37.099594&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;tyler.smith&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:37.695000&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;vijay.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:38.474575&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;vinod.kumar&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+&lt;TimeCreated SystemTime=&quot;2018-09-10 13:05:39.123190&quot;&gt;&lt;/TimeCreated&gt;
+&lt;Data Name=&quot;TargetUserName&quot;&gt;wunorse.openslae&lt;/Data&gt;
+&lt;Data Name=&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&lt;/Data&gt;
+</div></div>
+elf@9379a8ea1023:~$</code></pre>
+
+  <div style="height:20px" aria-hidden="true"
+  class="wp-block-spacer"></div>
+  <p>The output above clearly reveals a password spray attempt from source
+    host &quot;WIN-KCON-EXCH16&quot;. Many usernames are tried once each, between
+    the times of 13:03 and 13:05. The list of usernames that were password
+    sprayed is retrieved using the query below.</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ cat events.xml | grep &quot;&gt;4625&lt;&quot; -B 1 -A 37 | grep &apos;&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&apos; -A 9 -B 29 | grep -E &quot;13:03|13:04|13:05&quot; -A 31 -B 7 | grep &quot;TargetUserName&quot; | grep -oP &apos;(?&lt;=&gt;).*(?=&lt;)&apos;
+aaron.smith
+abhishek.kumar
+adam.smith
+ahmed.ali
+ahmed.hassan
+
+<div class="bg-margin-for-link"><input type="hidden" bg_collapse_expand="5c30dcdf19c0c3070416754" value="5c30dcdf19c0c3070416754"><input type="hidden" id="bg-show-more-text-5c30dcdf19c0c3070416754" value="Show all output"><input type="hidden" id="bg-show-less-text-5c30dcdf19c0c3070416754" value="Reduce output"><a id="bg-showmore-action-5c30dcdf19c0c3070416754" class="bg-showmore-plg-link bg-arrow" style=" color:#E0E0E0;;" href="#">Show all output</a><div id="bg-showmore-hidden-5c30dcdf19c0c3070416754">
+ahmed.mohamed
+ajay.kumar
+alex.smith
+ali.khan
+ali.raza
+amanda.smith
+amit.kumar
+amit.sharma
+amit.singh
+amy.smith
+andrew.smith
+anil.kumar
+arun.kumar
+ashley.brown
+ashley.johnson
+ashley.jones
+ashley.smith
+ashley.williams
+ashok.kumar
+ben.smith
+bob.smith
+brandon.smith
+brian.johnson
+brian.jones
+brian.smith
+bushy.evergreen
+chris.anderson
+chris.brown
+chris.davis
+chris.johnson
+chris.jones
+chris.lee
+chris.martin
+chris.miller
+chris.smith
+chris.taylor
+chris.williams
+chris.wilson
+christopher.smith
+dan.smith
+daniel.smith
+dave.smith
+david.anderson
+david.brown
+david.johnson
+david.jones
+david.lee
+david.miller
+david.smith
+david.williams
+david.wilson
+deepak.kumar
+deepak.sharma
+dinesh.kumar
+eric.johnson
+eric.smith
+gaurav.sharma
+greg.smith
+gurpreet.singh
+harpreet.singh
+heather.smith
+holly.evergreen
+imran.khan
+james.brown
+james.johnson
+james.jones
+james.lee
+james.smith
+james.taylor
+james.williams
+jamie.smith
+jane.smith
+jason.brown
+jason.jones
+jason.lee
+jason.miller
+jason.smith
+jason.williams
+jeff.smith
+jennifer.johnson
+jennifer.jones
+jennifer.smith
+jessica.brown
+jessica.johnson
+jessica.jones
+jessica.smith
+jessica.williams
+joe.smith
+john.anderson
+john.brown
+john.davis
+john.johnson
+john.jones
+john.lee
+john.miller
+john.smith
+john.taylor
+john.williams
+john.wilson
+jose.garcia
+jose.rodriguez
+josh.smith
+justin.smith
+karen.smith
+katie.smith
+kelly.smith
+kevin.brown
+kevin.johnson
+kevin.jones
+kevin.smith
+kim.smith
+kiran.kumar
+kyle.smith
+laura.smith
+lee
+linda.smith
+lisa.smith
+manish.kumar
+manoj.kumar
+mark.brown
+mark.johnson
+mark.jones
+mark.smith
+mark.williams
+mary.smith
+matt.johnson
+matt.smith
+matthew.smith
+melissa.smith
+michael.brown
+michael.davis
+michael.johnson
+michael.jones
+michael.lee
+michael.miller
+michael.smith
+michael.taylor
+michael.williams
+michael.wilson
+michelle.smith
+mike.brown
+mike.johnson
+mike.jones
+mike.miller
+mike.smith
+mike.williams
+mohamed.ahmed
+mohamed.ali
+muhammad.ali
+naveen.kumar
+nicole.smith
+paul.smith
+pepper.minstix
+pradeep.kumar
+praveen.kumar
+rachel.smith
+rahul.kumar
+rahul.sharma
+rahul.singh
+raj.kumar
+rajesh.kumar
+rakesh.kumar
+ravi.kumar
+richard.smith
+robert.brown
+robert.johnson
+robert.jones
+robert.smith
+robert.williams
+rohit.sharma
+ryan.johnson
+ryan.smith
+salman.khan
+sam.smith
+samantha.smith
+sameer.khan
+sana.khan
+sandeep.kumar
+sandeep.singh
+sanjay.kumar
+santhosh.kumar
+santosh.kumar
+sara.khan
+sarah.johnson
+sarah.jones
+sarah.smith
+sathish.kumar
+scott.johnson
+scott.smith
+senthil.kumar
+shinny.upatree
+sparkle.redberry
+stephanie.smith
+steve.johnson
+steve.smith
+steven.smith
+sugerplum.mary
+sunil.kumar
+suresh.kumar
+tim.smith
+tom.smith
+tyler.smith
+vijay.kumar
+vinod.kumar
+wunorse.openslae
+</div></div>
+elf@9379a8ea1023:~$</code></pre>
+
+  <div style="height:20px" aria-hidden="true"
+  class="wp-block-spacer"></div>
+  <p>The Windows event code for successful logons is 4624. Accounts that have
+    successfully logged on between 13:03 and 13:05 from &quot;WIN-KCON-EXCH16&quot;,
+    who are not webmail users, have very likely fallen victim to the password
+    spray attack.</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ cat events.xml | grep &quot;&gt;4624&lt;&quot; -B 1 -A 37 | grep &apos;&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&apos; -A 9 -B 29 | grep -E &quot;13:03|13:04|13:05&quot; -A 31 -B 7 | grep &quot;TargetUserName&quot; | grep -oP &apos;(?&lt;=&gt;).*(?=&lt;)&apos;
+HealthMailboxbab78a6
+HealthMailboxbe58608
+HealthMailboxbe58608
+HealthMailboxbe58608
+HealthMailboxbab78a6
+HealthMailboxbab78a6
+minty.candycane
+HealthMailboxbe58608
+HealthMailboxbe58608
+HealthMailboxbe58608
+HealthMailboxbab78a6</code></pre>
+
+  <div style="height:20px" aria-hidden="true"
+  class="wp-block-spacer"></div>
+  <p>Legit webmail users can be filtered out by filtering &quot;HealthMailbox&quot;
+    from the results</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ cat events.xml | grep &quot;&gt;4624&lt;&quot; -A 37 -B 1 | grep &apos;&quot;WorkstationName&quot;&gt;WIN-KCON-EXCH16&apos; -A 9 -B 29 | grep -E &quot;13:03|13:04|13:05&quot; -A 31 -B 7 | grep &quot;TargetUserName&quot; | grep -oP &apos;(?&lt;=&gt;).*(?=&lt;)&apos; | grep -v HealthMailbox
+minty.candycane
+elf@9379a8ea1023:~$</code></pre>
+
+  <div style="height:20px" aria-hidden="true"
+  class="wp-block-spacer"></div>
+  <p>User &quot;minty.candycane&quot; was very likely compromised in the password
+    spray attack.</p>
+<pre class="wp-block-code code-black-background"><code>elf@9379a8ea1023:~$ ./runtoanswer
+Loading, please wait......
+
+Whose account was successfully accessed by the attacker&apos;s password spray? minty.candycane
+
+<div class="bg-margin-for-link"><input type="hidden" bg_collapse_expand="5c30dcdf19c444062552107" value="5c30dcdf19c444062552107"><input type="hidden" id="bg-show-more-text-5c30dcdf19c444062552107" value="Show ASCII graphic"><input type="hidden" id="bg-show-less-text-5c30dcdf19c444062552107" value="Hide ASCII graphic"><a id="bg-showmore-action-5c30dcdf19c444062552107" class="bg-showmore-plg-link bg-arrow" style=" color:#E0E0E0;;" href="#">Show ASCII graphic</a><div id="bg-showmore-hidden-5c30dcdf19c444062552107">
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMkl0MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMXO0NMxl0MXOONMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMxlllooldollo0MMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMW0OKWMMNKkollldOKWMMNKOKMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMXollox0NMMMxlOMMMXOdllldWMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMWXOdlllokKxlk0xollox0NMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMNkkXMMMMMMMMMMMWKkollllllldkKWMMMMMMMMMMM0kOWMMMMMMMMMMMM
+MMMMMMWKXMMMkllxMMMMMMMMMMMMMMMXOold0NMMMMMMMMMMMMMMMollKMMWKKWMMMMMM
+MMMMMMdllKMMkllxMMMMMMMMMMMMN0KNMxl0MN00WMMMMMMMMMMMMollKMMOllkMMMMMM
+Mkox0XollKMMkllxMMMMMMMMMMMMxllldoldolllOMMMMMMMMMMMMollKMMkllxXOdl0M
+MMN0dllll0MMkllxMMMMMMMMMMMMMN0xolllokKWMMMMMMMMMMMMMollKMMkllllx0NMM
+MW0xolllolxOxllxMMNxdOMMMMMWMMMMWxlOMMMMWWMMMMWkdkWMMollOOdlolllokKMM
+M0lldkKWMNklllldNMKlloMMMNolok0NMxl0MX0xolxMMMXlllNMXolllo0NMNKkoloXM
+MMWWMMWXOdlllokdldxlloWMMXllllllooloollllllWMMXlllxolxxolllx0NMMMNWMM
+MMMN0kolllx0NMMW0ollll0NMKlloN0kolllokKKlllWMXklllldKMMWXOdlllokKWMMM
+MMOllldOKWMMMMkollox0OdldxlloMMMMxlOMMMNlllxoox0Oxlllo0MMMMWKkolllKMM
+MMW0KNMMMMMMMMKkOXWMMMW0olllo0NMMxl0MWXklllldXMMMMWKkkXMMMMMMMMX0KWMM
+MMMMMMMMMMMMMMMMMMMW0xollox0Odlokdlxxoox00xlllokKWMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMWollllOWMMMMNklllloOWMMMMNxllllxMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMN0xlllokK0xookdlxxookK0xollokKWMMMMMMMMMMMMMMMMMMM
+MMWKKWMMMMMMMMKk0XMMMMW0ollloOXMMxl0MWKklllldKWMMMWXOOXMMMMMMMMNKKMMM
+MMkllldOXWMMMMklllok00xoodlloMMMMxlOMMMNlllxook00xollo0MMMMWKkdlllKMM
+MMMN0xollox0NMMW0ollllONMKlloNKkollldOKKlllWMXklllldKWMMX0xlllok0NMMM
+MMWWMMWKkollldkxlodlloWMMXllllllooloollllllWMMXlllxooxkollldOXMMMWMMM
+M0lldOXWMNklllldNMKlloMMMNolox0XMxl0WXOxlldMMMXlllNMXolllo0WMWKkdloXM
+MW0xlllodldOxllxMMNxdOMMMMMNMMMMMxlOMMMMWNMMMMWxdxWMMollkkoldlllokKWM
+MMN0xllll0MMkllxMMMMMMMMMMMMMNKkolllokKWMMMMMMMMMMMMMollKMMkllllkKWMM
+MkldOXollKMMkllxMMMMMMMMMMMMxlllooloolll0MMMMMMMMMMMMollKMMkllxKkol0M
+MWWMMMdllKMMkllxMMMMMMMMMMMMXO0XMxl0WXOONMMMMMMMMMMMMollKMMOllkMMMWMM
+MMMMMMNKKMMMkllxMMMMMMMMMMMMMMMN0oldKWMMMMMMMMMMMMMMMollKMMWKKWMMMMMM
+MMMMMMMMMMMMXkxXMMMMMMMMMMMWKkollllllldOXMMMMMMMMMMMM0xkWMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMX0xlllok0xlk0xollox0NMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMXollldOXMMMxlOMMWXOdllldWMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMW0OKWMMWKkollldOXWMMN0kKMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMklllooloollo0MMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMXOOXMxl0WKOONMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMkl0MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWXMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+</div></div>
+Silly Minty Candycane, well this is what she gets.
+&quot;Winter2018&quot; isn&apos;t for The Internets.
+Passwords formed with season-year are on the hackers&apos; list.
+Maybe we should look at guidance published by the NIST?
+
+Congratulations!</code></pre>
+</div></body></html>

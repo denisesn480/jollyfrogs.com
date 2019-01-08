@@ -1,0 +1,47 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 5: AD Privilege Discovery</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective5.gif" alt="" class="wp-image-823">
+</figure>
+<p>Difficulty: 3/5
+  <br>Using the data set contained in this SANS Slingshot Linux image (https://download.holidayhackchallenge.com/HHC2018-DomainHack_2018-12-19.ova),
+  find a reliable path from a Kerberoastable user to the Domain Admins group. <strong>What&apos;s the user&apos;s logon name? </strong>
+  <br>
+  <br>Remember to avoid RDP as a control path as it depends on separate local
+  privilege escalation flaws. For hints on achieving this objective, please
+  visit Holly Evergreen and help her with the CURLing Master Cranberry Pi
+  terminal challenge.
+  <br>Note: Holly Evergreen is found on Ground floor in the left exit from the
+  main entrance hall
+  <br>
+  <br>Hints given:
+  <br>https://github.com/BloodHoundAD/BloodHound
+  <br>https://youtu.be/gOpsLiJFI1o</p>
+<p>The objective is accessed via the file &apos;HHC2018-DomainHack_2018-12-19.ova&apos;
+  through either VMWare Player version 15 as is, or through VirtualBox after
+  changing the 32-bit setting of the imported virtual machine to 64-bit.
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Unzip &quot;HHC2018-DomainHack_2018-12-19.ova&quot;
+  <br>
+  <br>Download VMWare player and install it:
+  <br>https://download3.vmware.com/software/player/file/VMware-player-15.0.2-10952284.exe
+  <br>
+  <br>Start&quot;BloodHound&quot;
+  <br>Click the hamburger menu in the top left
+  <br>Click &apos;Queries tab&apos;
+  <br>Click &apos;Shortest Paths to Domain Admins from Kerberoastable Users&apos;
+  <br>Click &apos;DOMAIN ADMINS@AD.KRINGLECASTLE.COM&apos;</p>
+<p>The user &quot;LDUBEJ00320@AD.KRINGLECASTLE.COM&quot;
+  <br>is a member of IT_00332@AD.KRINGLECASTLE.COM
+  <br>which can AdminTo COMP00185.AD.KRINGLECASTLE.COM
+  <br>which HasSession to JBETAK00084@AD.KRINGLECASTLE.COM
+  <br>who is a member of DOMAIN ADMINS@AD.KRINGLECASTLE.COM</p>
+<p>A user with a reliable path to the Domain Admins group is:
+  <br><strong>LDUBEJ00320@AD.KRINGLECASTLE.COM</strong>
+  <br>
+</p>
+</div></body></html>

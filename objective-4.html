@@ -1,0 +1,60 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 4: Data Repo Analysis</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective4.gif" alt="" class="wp-image-820">
+</figure>
+<p>Difficulty: 2/5
+  <br>Retrieve the encrypted ZIP file from the North Pole Git repository (https://git.kringlecastle.com/Upatree/santas_castle_automation).
+  <br><strong>What is the password to open this file?</strong>
+  <br>
+  <br>For hints on achieving this objective, please visit Wunorse Openslae and
+  help him with Stall Mucking Report Cranberry Pi terminal challenge.
+  <br>Note: Wunorse Openslae is found on Ground floor in the right exit from
+  the main entrance hall
+  <br>
+  <br>Hints given:
+  <br>Brian Hostetler is giving a great Trufflehog talk upstairs (https://www.youtube.com/watch?v=myKrWVaq3Cw)
+  <br>https://github.com/dxa4481/truffleHog</p>
+<p>
+  <br>The objective can be accessed directly via this link:
+  <br>https://git.kringlecastle.com/Upatree/santas_castle_automation
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Navigate to https://git.kringlecastle.com/Upatree/santas_castle_automation
+  and click &quot;Find file&quot;. Search for &apos;zip&apos; and download
+  the file &apos;ventilation_diagram.zip&apos;</p>
+<p>Click &quot;Commits&quot;, scroll down to &quot;important update&quot;
+  and click on the entry. The &apos;ventilation_diagram.zip&apos; password
+  is revealed to be &apos;Yippee-ki-yay&apos;
+  <br>
+</p>
+<pre class="wp-block-code code-black-background"><code>root@kali:~# wget https://git.kringlecastle.com/Upatree/santas_castle_automation/raw/master/schematics/ventilation_diagram.zip?inline=false -O ventilation_diagram.zip
+--2018-12-30 15:11:35--  https://git.kringlecastle.com/Upatree/santas_castle_automation/raw/master/schematics/ventilation_diagram.zip?inline=false
+Resolving git.kringlecastle.com (git.kringlecastle.com)... 35.185.89.85
+Connecting to git.kringlecastle.com (git.kringlecastle.com)|35.185.89.85|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 740409 (723K) [application/octet-stream]
+Saving to: &apos;ventilation_diagram.zip&apos;
+
+ventilation_diagram.zip         100%[=======================================================&gt;] 723.06K   455KB/s    in 1.6s
+
+2018-12-30 15:11:42 (455 KB/s) - &apos;ventilation_diagram.zip&apos; saved [740409/740409]
+
+root@kali:~# unzip -P &apos;Yippee-ki-yay&apos; ventilation_diagram.zip
+Archive:  ventilation_diagram.zip
+   creating: ventilation_diagram/
+  inflating: ventilation_diagram/ventilation_diagram_2F.jpg
+  inflating: ventilation_diagram/ventilation_diagram_1F.jpg
+root@kali:~# file ./ventilation_diagram/ventilation_diagram_2F.jpg
+./ventilation_diagram/ventilation_diagram_2F.jpg: JPEG image data, JFIF standard 1.02, resolution (DPI), density 200x200, segment length 16, baseline, precision 8, 2200x1700, frames 3
+root@kali:~# </code></pre>
+<div style="height:20px" aria-hidden="true"
+class="wp-block-spacer"></div>
+<p>The password to decrypt the file &apos;ventilation_diagram.zip&apos; is:
+  <br><strong>Yippee-ki-yay</strong>
+  <br>
+</p>
+</div></body></html>

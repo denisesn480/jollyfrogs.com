@@ -1,0 +1,235 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Elf #2 - Minty Candycane: The Name Game Cranberry Pi terminal</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="pwshmenu.gif" alt="" class="wp-image-751">
+</figure>
+<hr class="wp-block-separator">
+<h2>Minty Candycane: The Name Game Cranberry Pi terminal</h2>
+<p>Hints given:
+  <br>https://ss64.com/ps/call.html
+  <br>https://www.digitalocean.com/community/questions/how-do-i-dump-an-sqlite-database</p>
+<p>We just hired this new worker,
+  <br>Californian or New Yorker?
+  <br>Think he&apos;s making some new toy bag...
+  <br>My job is to make his name tag.
+  <br>
+  <br>Golly gee, I&apos;m glad that you came,
+  <br>I recall naught but his last name!
+  <br>Use our system or your own plan,
+  <br>Find the first name of our guy &quot;Chan!&quot;
+  <br>
+  <br>-Bushy Evergreen
+  <br>
+  <br>To solve this challenge, determine the new worker&apos;s first name and
+  submit to runtoanswer.
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The system shows a simple menu</p>
+<pre class="wp-block-code code-black-background"><code>====================================================================
+=                                                                  =
+= S A N T A &apos; S  C A S T L E  E M P L O Y E E  O N B O A R D I N G =
+=                                                                  =
+====================================================================
+
+Press  1 to start the onboard process.
+Press  2 to verify the system.
+Press  q to quit.
+
+Please make a selection: 2
+
+Validating data store for employee onboard information.
+Enter address of server: &amp;sh
+$ Usage: ping [-aAbBdDfhLnOqrRUvV] [-c count] [-i interval] [-I interface]
+      [-m mark] [-M pmtudisc_option] [-l preload] [-p pattern] [-Q tos]
+      [-s packetsize] [-S sndbuf] [-t ttl] [-T timestamp_option]
+      [-w deadline] [-W timeout] [hop1 ...] destination
+ls
+menu.ps1  onboard.db  runtoanswer</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Display the contents of the file &apos;menu.ps1&apos;</p>
+<pre class="wp-block-code code-black-background"><code>$ cat menu.ps1
+<div class="bg-margin-for-link"><input type="hidden" bg_collapse_expand="5c30dcd7a09937066776868" value="5c30dcd7a09937066776868"><input type="hidden" id="bg-show-more-text-5c30dcd7a09937066776868" value="Show output"><input type="hidden" id="bg-show-less-text-5c30dcd7a09937066776868" value="Hide output"><a id="bg-showmore-action-5c30dcd7a09937066776868" class="bg-showmore-plg-link bg-arrow" style=" color:#E0E0E0;;" href="#">Show output</a><div id="bg-showmore-hidden-5c30dcd7a09937066776868">
+$global:firstrun = $TRUE
+
+function Show-Menu
+{
+  $intro = @(
+    &quot;We just hired this new worker,&quot;,
+    &quot;Californian or New Yorker?&quot;,
+    &quot;Think he&apos;s making some new toy bag...&quot;,
+    &quot;My job is to make his name tag.&quot;,
+    &quot;&quot;,
+    &quot;Golly gee, I&apos;m glad that you came,&quot;,
+    &quot;I recall naught but his last name!&quot;,
+    &quot;Use our system or your own plan,&quot;,
+    &quot;Find the first name of our guy `&quot;Chan!`&quot;&quot;,
+    &quot;&quot;,
+    &quot;-Bushy Evergreen&quot;,
+    &quot;&quot;,
+    &quot;To solve this challenge, determine the new worker&apos;s first name and submit to runtoanswer.&quot;
+  )
+  $header = @(
+    &quot;====================================================================&quot;
+    &quot;=                                                                  =&quot;,
+    &quot;= S A N T A &apos; S  C A S T L E  E M P L O Y E E  O N B O A R D I N G =&quot;,
+    &quot;=                                                                  =&quot;,
+    &quot;====================================================================&quot;
+  )
+
+  cls
+  if ($global:firstrun -eq $TRUE) {
+    Write-Host &quot;`n`n&quot;
+    for ($i = 0; $i -lt $intro.length; $i++) {
+      Write-Host $intro[$i]
+    }
+    $global:firstrun = $FALSE
+  }
+
+  Write-Host &quot;`n`n`n&quot;
+  for ($i = 0; $i -lt $header.length; $i++) {
+    Write-Host $header[$i]
+  }
+  Write-Host &quot;`n`n`n&quot;
+  Write-Host &apos; Press &apos;1&apos; to start the onboard process.&apos;
+  Write-Host &apos; Press &apos;2&apos; to verify the system.&apos;
+  Write-Host &apos; Press &apos;q&apos; to quit.&apos;
+  Write-Host &quot;`n&quot;
+}
+
+function Employee-Onboarding-Form
+{
+  Write-Host &quot;`n`nWelcome to Santa&apos;s Castle!`n`n&quot;
+  Write-Host &quot;At Santa&apos;s Castle, our employees are our family. We care for each other,&quot;
+  Write-Host &quot;and support everyone in our common goals.`n&quot;
+  Write-Host &quot;Your first test at Santa&apos;s Castle is to complete the new employee onboarding paperwork.&quot;
+  Write-Host &quot;Don&apos;t worry, it&apos;s an easy test! Just complete the required onboarding information below.`n`n&quot;
+
+  $efirst = Read-Host &quot;Enter your first name.`n&quot;
+  $elast = Read-Host &quot;Enter your last name.`n&quot;
+  $estreet1 = Read-Host &quot;Enter your street address (line 1 of 2).`n&quot;
+  $estreet2 = Read-Host &quot;Enter your street address (line 2 of 2).`n&quot;
+  $ecity = Read-Host &quot;Enter your city.`n&quot;
+  $epostalcode = Read-Host &quot;Enter your postal code.`n&quot;
+  $ephone = Read-Host &quot;Enter your phone number.`n&quot;
+  $eemail = Read-Host &quot;Enter your email address.`n&quot;
+
+  Write-Host &quot;`n`nIs this correct?`n`n&quot;
+  Write-Host &quot;$efirst $elast&quot;
+  Write-Host &quot;$estreet1&quot;
+  if ($estreet2) {
+    Write-Host &quot;$estreet2&quot;
+  }
+  Write-Host &quot;$ecity, $epostalcode&quot;
+  Write-Host &quot;$ephone&quot;
+  Write-Host &quot;$eemail&quot;
+
+  $input = Read-Host &apos;y/n&apos;
+  if ($input -eq &apos;y&apos; -Or $input -eq &apos;Y&apos;) {
+    Write-Host &quot;Save to sqlite DB using command line&quot;
+    Start-Process -FilePath &quot;./sqlite3&quot; -ArgumentList &quot;onboard.db `&quot;INSERT INTO onboard (fname, lname, street1, street2, city, postalcode, phone, email) VALUES (`&apos;$efirst`&apos;,`&apos;$elast`&apos;, `&apos;$estreet1`&apos;, `&apos;$estreet2`&apos;, `&apos;$ecity`&apos;, `&apos;$epostalcode`&apos;, `&apos;$ephone`&apos;, `&apos;$eemail`&apos;)`&quot;&quot;
+  }
+}
+
+try
+{
+  do
+  {
+    Show-Menu
+    $input = Read-Host &apos;Please make a selection&apos;
+    switch ($input)
+    {
+      &apos;1&apos; {
+        cls
+        Employee-Onboarding-Form
+      } &apos;2&apos; {
+        cls
+        Write-Host &quot;Validating data store for employee onboard information.&quot;
+        $server = Read-Host &apos;Enter address of server&apos;
+        /bin/bash -c &quot;/bin/ping -c 3 $server&quot;
+        /bin/bash -c &quot;/usr/bin/file onboard.db&quot;
+      } &apos;9&apos; {
+        /usr/bin/pwsh
+        return
+      } &apos;q&apos; {
+        return
+      } default {
+        Write-Host &quot;Invalid entry.&quot;
+      }
+    }
+    pause
+  }
+  until ($input -eq &apos;q&apos;)
+} finally {
+}
+</div></div></code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Dump the contents of the sqlite database file &apos;onboard.db&apos; and search for &apos;Chan&apos;</p>
+<pre class="wp-block-code code-black-background"><code>$ sqlite3 onboard.db .dump | grep Chan
+INSERT INTO &quot;onboard&quot; VALUES(84,&apos;Scott&apos;,&apos;Chan&apos;,&apos;48 Colorado Way&apos;,NULL,&apos;Los Angeles&apos;,&apos;90067&apos;,&apos;4017533509&apos;,&apos;scottmchan90067@gmail.com&apos;);
+$ ./runtoanswer
+Loading, please wait......
+
+Enter Mr. Chan&apos;s first name: Scott
+
+    .;looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool:&apos;
+  &apos;ooooooooooookOOooooxOOdodOOOOOOOdoxOOdoooooOOkoooooooxO000Okdooooooooooooo;
+ &apos;oooooooooooooXMWooooOMMxodMMNKKKKxoOMMxoooooWMXoooookNMWK0KNMWOooooooooooooo;
+ :oooooooooooooXMWooooOMMxodMM0ooooooOMMxoooooWMXooooxMMKoooooKMMkooooooooooooo
+ coooooooooooooXMMMMMMMMMxodMMWWWW0ooOMMxoooooWMXooooOMMkoooookMM0ooooooooooooo
+ coooooooooooooXMWdddd0MMxodMM0ddddooOMMxoooooWMXooooOMMOoooooOMMkooooooooooooo
+ coooooooooooooXMWooooOMMxodMMKxxxxdoOMMOkkkxoWMXkkkkdXMW0xxk0MMKoooooooooooooo
+ cooooooooooooo0NXooookNNdodXNNNNNNkokNNNNNNOoKNNNNNXookKNNWNXKxooooooooooooooo
+ cooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ cooooooooooooooooooooooooooooooooooMYcNAMEcISooooooooooooooooooooooooooooooooo
+ cddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddo
+ OMMMMMMMMMMMMMMMNXXWMMMMMMMNXXWMMMMMMWXKXWMMMMWWWWWWWWWMWWWWWWWWWMMMMMMMMMMMMW
+ OMMMMMMMMMMMMW:  .. ;MMMk&apos;     .NMX:.  .  .lWO         d         xMMMMMMMMMMMW
+ OMMMMMMMMMMMMo  OMMWXMMl  lNMMNxWK  ,XMMMO  .MMMM. .MMMMMMM, .MMMMMMMMMMMMMMMW
+ OMMMMMMMMMMMMX.  .cOWMN  &apos;MMMMMMM;  WMMMMMc  KMMM. .MMMMMMM, .MMMMMMMMMMMMMMMW
+ OMMMMMMMMMMMMMMKo,   KN  ,MMMMMMM,  WMMMMMc  KMMM. .MMMMMMM, .MMMMMMMMMMMMMMMW
+ OMMMMMMMMMMMMKNMMMO  oM,  dWMMWOWk  cWMMMO  ,MMMM. .MMMMMMM, .MMMMMMMMMMMMMMMW
+ OMMMMMMMMMMMMc ...  cWMWl.  .. .NMk.  ..  .oMMMMM. .MMMMMMM, .MMMMMMMMMMMMMMMW
+ xXXXXXXXXXXXXXKOxk0XXXXXXX0kkkKXXXXXKOkxkKXXXXXXXKOKXXXXXXXKO0XXXXXXXXXXXXXXXK
+ .oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo,
+  .looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo,
+    .,cllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllc;.
+
+Congratulations!</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<h2>Bonus solution</h2>
+    <p>Entering &apos;9&apos; in the menu activates a backdoor that gives a shell</p>
+    <pre
+    class="wp-block-code"><code>====================================================================
+=                                                                  =
+= S A N T A &apos; S  C A S T L E  E M P L O Y E E  O N B O A R D I N G =
+=                                                                  =
+====================================================================
+
+ Press  1 to start the onboard process.
+ Press  2 to verify the system.
+ Press  q to quit.
+
+Please make a selection: 9
+PowerShell v6.0.3
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+https://aka.ms/pscore6-docs
+Type &apos;help&apos; to get help.
+
+PS /home/elf&gt; ls -al
+total 5476
+drwxr-xr-x 1 elf  elf     4096 Dec 29 05:44 .
+drwxr-xr-x 1 root root    4096 Dec 14 16:17 ..
+-rw-r--r-- 1 elf  elf      220 Aug 31  2015 .bash_logout
+-rw-r--r-- 1 root root      95 Dec 14 16:13 .bashrc
+drwxr-xr-x 3 elf  elf     4096 Dec 29 05:44 .cache
+drwxr-xr-x 3 elf  elf     4096 Dec 29 05:44 .local
+-rw-r--r-- 1 root root    3866 Dec 14 16:13 menu.ps1
+-rw-rw-rw- 1 root root   24576 Dec 14 16:13 onboard.db
+-rw-r--r-- 1 elf  elf      655 May 16  2017 .profile
+-rwxr-xr-x 1 root root 5547968 Dec 14 16:13 runtoanswer
+PS /home/elf&gt; </code></pre>
+</div></body></html>

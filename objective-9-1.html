@@ -1,0 +1,146 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 9.1: Catch the malware</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective9-1.gif" alt="" class="wp-image-876">
+</figure>
+<p>Difficulty: 3/5
+  <br>
+  <br>Alabaster Snowball is in dire need of your help. Santa&apos;s file server
+  has been hit with malware. Help Alabaster Snowball deal with the malware
+  on Santa&apos;s server by completing several tasks.
+  <br>For hints on achieving this objective, please visit Shinny Upatree and
+  help him with the&#xA0;Sleigh Bell Lottery&#xA0;Cranberry Pi terminal challenge.
+  <br>
+  <br>Objective 9.1: <strong>Assist Alabaster by building a Snort filter to identify the malware plaguing Santa&apos;s Castle. </strong>
+  <br>
+  <br>Note: Shinny Upatree can be found on Floor 1, on the South Eastern side
+  of the lobby area
+  <br>
+  <br>Hints given:
+  <br>Shinny Upatree:
+  <br>Have you heard that Kringle Castle was hit by a new ransomware called
+  Wannacookie? Several elves reported receiving a cookie recipe Word doc.
+  When opened, a PowerShell screen flashed by and their files were encrypted.
+  Many elves were affected, so Alabaster went to go see if he could help
+  out. I hope Alabaster watched the PowerShell Malware talk at KringleCon
+  before he tried analyzing Wannacookie on his computer. An elf I follow
+  online said he analyzed Wannacookie and that it communicates over DNS.
+  He also said that Wannacookie transfers files over DNS and that it looks
+  like it grabs a public key this way. Another recent ransomware made it
+  possible to retrieve crypto keys from memory. Hopefully the same is true
+  for Wannacookie! Of course, this all depends how the key was encrypted
+  and managed in memory. Proper public key encryption requires a private
+  key to decrypt. Perhaps there is a flaw in the wannacookie author&apos;s
+  DNS server that we can manipulate to retrieve what we need. If so, we can
+  retrieve our keys from memory, decrypt the key, and then decrypt our ransomed
+  files.</p>
+<p>The objective can be accessed directly via this link:
+  <br>https://docker.kringlecon.com/?challenge=snort&amp;id=7cd0c47e-7c7f-4983-95fe-d3ea9f752877
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Connect to the Snort Challenge console or navigate to:
+<br>https://docker.kringlecon.com/?challenge=snort&amp;id=7cd0c47e-7c7f-4983-95fe-d3ea9f752877</p>
+<pre class="wp-block-code"><code> _  __     _             _       _____          _   _
+ | |/ /    (_)           | |     / ____|        | | | |
+ | &apos; / _ __ _ _ __   __ _| | ___| |     __ _ ___| |_| | ___
+ |  &lt; | &apos;__| | &apos;_ \ / _` | |/ _ \ |    / _` / __| __| |/ _ \
+ | . \| |  | | | | | (_| | |  __/ |___| (_| \__ \ |_| |  __/
+ |_|\_\_|  |_|_|_|_|\__, |_|\___|\_____\__,_|___/\__|_|\___|
+       / ____| __/ |          | |
+      | (___  |___/  ___  _ __| |_
+       \___ \| &apos;_ \ / _ \| &apos;__| __|
+       ____) | | | | (_) | |  | |_
+      |_____/|_|_|_|\___/|_|_  \__|
+         |_   _|  __ \ / ____|
+         | | | |  | | (___
+     _____   | | | |  | |\___ \        __
+    / ____| _| |_| |__| |____) |      /_ |
+     | (___  |_____|_____/|_____/ _ __   | |
+    \___ \ / _ \ &apos;_ \/ __|/ _ \| &apos;__|  | |
+    ____) |  __/ | | \__ \ (_) | |     | |
+     |_____/ \___|_| |_|___/\___/|_|     |_|
+
+============================================================
+INTRO:
+  Kringle Castle is currently under attacked by new piece of
+  ransomware that is encrypting all the elves files. Your
+  job is to configure snort to alert on ONLY the bad
+  ransomware traffic.
+
+GOAL:
+  Create a snort rule that will alert ONLY on bad ransomware
+  traffic by adding it to snorts /etc/snort/rules/local.rules
+  file. DNS traffic is constantly updated to snort.log.pcap
+
+COMPLETION:
+  Successfully create a snort rule that matches ONLY
+  bad DNS traffic and NOT legitimate user traffic and the
+  system will notify you of your success.
+
+  Check out ~/more_info.txt for additional information.</code>
+</pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Check the contents of the file ~/more_info.txt</p>
+<pre class="wp-block-code"><code>elf@59f9a5f70ada:~$ cat more_info.txt
+MORE INFO:
+  A full capture of DNS traffic for the last 30 seconds is
+  constantly updated to:
+
+  /home/elf/snort.log.pcap
+
+  You can also test your snort rule by running:
+
+  snort -A fast -r ~/snort.log.pcap -l ~/snort_logs -c /etc/snort/snort.conf
+
+  This will create an alert file at ~/snort_logs/alert
+
+  This sensor also hosts an nginx web server to access the
+  last 5 minutes worth of pcaps for offline analysis. These
+  can be viewed by logging into:
+
+  http://snortsensor1.kringlecastle.com/
+
+  Using the credentials:
+  ----------------------
+  Username | elf
+  Password | onashelf
+
+  tshark and tcpdump have also been provided on this sensor.
+
+HINT:
+  Malware authors often user dynamic domain names and
+  IP addresses that change frequently within minutes or even
+  seconds to make detecting and block malware more difficult.
+  As such, its a good idea to analyze traffic to find patterns
+  and match upon these patterns instead of just IP/domains.</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Login to http://snortsensor1.kringlecastle.com
+  <br>username: elf
+  <br>password: onashelf
+  <br>
+  <br>Download one or more of the .pcap files</p>
+<div class="wp-block-file"><a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/snort.log_.1545449212.6848407.pcap_.zip">snort.log.1545449212.6848407.pcap (zipped)</a>
+<a href="https://www.jollyfrogs.com/wp-content/uploads/2019/01/snort.log_.1545449212.6848407.pcap_.zip" class="wp-block-file__button" download=""></a>
+</div>
+<p>Open the .pcap file in Wireshark. Notice that some DNS requests are sent
+  to non-standard DNS ports. Exclude the good traffic using this filter</p>
+<pre class="wp-block-code"><code>!(udp.dstport == 53)</code></pre>
+<p>The packets to non-standard DNS ports all contain the string &quot;77616E6E61636F6F6B69652E6D696E2E707331&quot;</p>
+<pre class="wp-block-code code-black-background"><code>356    3.606484    212.43.18.229   10.126.0.26 Standard query response 0xedf0 TXT 58.77616E6E61636F6F6B69652E6D696E2E707331.rehrugnbsa.org TXT 57608   DNS 425
+ 2    0.010593    233.12.59.19    10.126.0.19 Standard query response 0xa4b6 TXT    77616E6E61636F6F6B69652E6D696E2E707331.nsaehrgrub.org TXT 38663   DNS 167</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The string &quot;77616E6E61636F6F6B69652E6D696E2E707331&quot; is a unique
+  identifier that can be used to create the Snort rule. Add a snort rule
+  as follows:
+  <br>
+</p>
+<pre class="wp-block-code code-black-background"><code>elf@524792a816b4:~$ echo &apos;alert udp any any -&gt; any any (msg:&quot;Bad DNS&quot;; sid:10000001; rev:001; content:&quot;77616E6E61636F6F6B69652E6D696E2E707331&quot;;)&apos; &gt; /etc/snort/rules/local.rules</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Shortly after the line is added, the Congratulation message appears</p>
+<pre class="wp-block-code code-black-background"><code>elf@524792a816b4:~$ echo &apos;alert udp any any -&gt; any any (msg:&quot;Bad DNS&quot;; sid:10000001; rev:001; content:&quot;77616E6E61636F6F6B69652E6D696E2E707331&quot;;)&apos; &gt; /etc/snort/rules/local.rules
+elf@524792a816b4:~$
+[+] Congratulation! Snort is alerting on all ransomware and only the ransomware! </code></pre>
+</div></body></html>

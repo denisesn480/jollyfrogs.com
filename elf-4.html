@@ -1,0 +1,84 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Elf #4 - Wunorse Openslae - Stall Mucking Report Cranberry Pi terminal</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="plaintext-creds.gif" alt="" class="wp-image-770">
+</figure>
+<hr class="wp-block-separator">
+<h2>Wunorse Openslae: Stall Mucking Report Cranberry Pi terminal</h2>
+<p>Thank you Madam or Sir for the help that you bring!
+  <br>I was wondering how I might rescue my day.
+  <br>Finished mucking out stalls of those pulling the sleigh,
+  <br>My report is now due or my KRINGLE&apos;s in a sling!
+  <br>
+  <br>There&apos;s a samba share here on this terminal screen.
+  <br>What I normally do is to upload the file,
+  <br>With our network credentials (we&apos;ve shared for a while).
+  <br>When I try to remember, my memory&apos;s clean!
+  <br>
+  <br>Be it last night&apos;s nog bender or just lack of rest,
+  <br>For the life of me I can&apos;t send in my report.
+  <br>Could there be buried hints or some way to contort,
+  <br>Gaining access - oh please now do give it your best!
+  <br>
+  <br>-Wunorse Openslae
+  <br>
+  <br>Complete this challenge by uploading the elf&apos;s report.txt file to
+  the samba share at //localhost/report-upload
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>List running processes using &apos;ps -eaf&apos; and pipe the output to &apos;less&apos; to show truncated output</p>
+<pre class="wp-block-code code-black-background"><code>elf@db2e6e8403f5:~$ ps -eaf | less
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 23:36 pts/0    00:00:00 /bin/bash /sbin/init
+root        11     1  0 23:36 pts/0    00:00:00 sudo -u manager /home/manager/samba-wrapper.sh --verbosity=none --no-check-certificate --extraneous-command-argument --do-not-run-as-tyler --accept-sage-advice -a 42 -d~ --ignore-sw-holiday-special --suppress --suppress //localhost/report-upload/ directreindeerflatterystable -U report-upload
+root        12     1  0 23:36 pts/0    00:00:00 sudo -E -u manager /usr/bin/python /home/manager/report-check.py
+root        16     1  0 23:36 pts/0    00:00:00 sudo -u elf /bin/bash
+manager     17    11  0 23:36 pts/0    00:00:00 /bin/bash /home/manager/samba-wrapper.sh --verbosity=none --no-check-certificate --extraneous-command-argument --do-not-run-as-tyler --accept-sage-advice -a 42 -d~ --ignore-sw-holiday-special --suppress --suppress //localhost/report-upload/ directreindeerflatterystable -U report-upload
+manager     18    12  0 23:36 pts/0    00:00:00 /usr/bin/python /home/manager/report-check.py
+manager     19    17  0 23:36 pts/0    00:00:00 sleep 60
+elf         20    16  0 23:36 pts/0    00:00:00 /bin/bash
+root        24     1  0 23:36 ?        00:00:00 /usr/sbin/smbd
+root        25    24  0 23:36 ?        00:00:00 /usr/sbin/smbd
+root        26    24  0 23:36 ?        00:00:00 /usr/sbin/smbd
+root        28    24  0 23:36 ?        00:00:00 /usr/sbin/smbd
+elf         33    20  0 23:37 pts/0    00:00:00 ps -eaf
+elf         34    20  0 23:37 pts/0    00:00:00 less</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Use the SMB share path, username and password to upload the file &apos;report.txt&apos;.</p>
+<pre class="wp-block-code code-black-background"><code>elf@db2e6e8403f5:~$ smbclient //localhost/report-upload/ -U&apos;report-upload&apos;%&apos;directreindeerflatterystable&apos;
+WARNING: The &quot;syslog&quot; option is deprecated
+Domain=[WORKGROUP] OS=[Windows 6.1] Server=[Samba 4.5.12-Debian]
+smb: \&gt; put report.txt
+putting file report.txt as \report.txt (250.5 kb/s) (average 250.5 kb/s)
+smb: \&gt; Terminated
+elf@db2e6e8403f5:~$
+
+                               .;;;;;;;;;;;;;;;&apos;
+                             ,NWOkkkkkkkkkkkkkkNN;
+                           ..KM; Stall Mucking ,MN..
+                         OMNXNMd.             .oMWXXM0.
+                        ;MO   l0NNNNNNNNNNNNNNN0o   xMc
+                        :MO                         xMl             &apos;.
+                        :MO   dOOOOOOOOOOOOOOOOOd.  xMl             :l:.
+ .cc::::::::;;;;;;;;;;;,oMO  .0NNNNNNNNNNNNNNNNN0.  xMd,,,,,,,,,,,,,clll:.
+ &apos;kkkkxxxxxddddddoooooooxMO   ..&apos;&apos;&apos;&apos;&apos;&apos;&apos;&apos;&apos;&apos;&apos;.        xMkcccccccllllllllllooc.
+ &apos;kkkkxxxxxddddddoooooooxMO  .MMMMMMMMMMMMMM,       xMkcccccccllllllllllooool
+ &apos;kkkkxxxxxddddddoooooooxMO   &apos;::::::::::::,        xMkcccccccllllllllllool,
+ .ooooollllllccccccccc::dMO                         xMx;;;;;::::::::lllll&apos;
+                        :MO  .ONNNNNNNNXk           xMl             :lc&apos;
+                        :MO   dOOOOOOOOOo           xMl             ;.
+                        :MO   &apos;cccccccccccccc:&apos;     xMl
+                        :MO  .WMMMMMMMMMMMMMMMW.    xMl
+                        :MO    ...............      xMl
+                        .NWxddddddddddddddddddddddddNW&apos;
+                          ;ccccccccccccccccccccccccc;
+
+You have found the credentials I just had forgot,
+And in doing so you&apos;ve saved me trouble untold.
+Going forward we&apos;ll leave behind policies old,
+Building separate accounts for each elf in the lot.
+
+-Wunorse Openslae</code></pre>
+</div></body></html>

